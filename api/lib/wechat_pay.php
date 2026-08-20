@@ -91,12 +91,18 @@ function wechatRequest(string $method, string $urlPathWithQuery, array $payload 
     return ['success' => false, 'http_code' => $httpCode, 'error' => is_array($decoded) ? $decoded : ['raw' => $resp]];
 }
 
+function wechatOrderExpireAt(): string
+{
+    $minutes = (int)(getConfig()['order_reservation_ttl_minutes'] ?? 30);
+    return (new DateTimeImmutable('now'))->modify('+' . $minutes . ' minutes')->format(DATE_RFC3339);
+}
+
 function createJsapiOrder(string $description, string $outTradeNo, int $totalFen, string $openid): array
 {
     $config = getConfig();
     return wechatRequest('POST', '/v3/pay/transactions/jsapi', [
         'appid' => $config['appid'], 'mchid' => $config['mchid'], 'description' => $description,
-        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'],
+        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'], 'time_expire' => wechatOrderExpireAt(),
         'amount' => ['total' => $totalFen, 'currency' => 'CNY'], 'payer' => ['openid' => $openid],
     ]);
 }
@@ -106,7 +112,7 @@ function createNativeOrder(string $description, string $outTradeNo, int $totalFe
     $config = getConfig();
     return wechatRequest('POST', '/v3/pay/transactions/native', [
         'appid' => $config['appid'], 'mchid' => $config['mchid'], 'description' => $description,
-        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'],
+        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'], 'time_expire' => wechatOrderExpireAt(),
         'amount' => ['total' => $totalFen, 'currency' => 'CNY'],
     ]);
 }
@@ -115,6 +121,14 @@ function queryOrderByOutTradeNo(string $outTradeNo): array
 {
     $config = getConfig();
     return wechatRequest('GET', '/v3/pay/transactions/out-trade-no/' . rawurlencode($outTradeNo) . '?mchid=' . rawurlencode($config['mchid']));
+}
+
+function closeWechatOrder(string $outTradeNo): array
+{
+    $config = getConfig();
+    return wechatRequest('POST', '/v3/pay/transactions/out-trade-no/' . rawurlencode($outTradeNo) . '/close', [
+        'mchid' => $config['mchid'],
+    ]);
 }
 
 function createRefund(string $outTradeNo, string $outRefundNo, int $refundFen, int $totalFen, string $reason = '用户申请退款'): array
