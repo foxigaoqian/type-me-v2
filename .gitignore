@@ -5,6 +5,8 @@
 certs/*.pem
 certs/*.key
 storage/*.json
+storage/*.ndjson
+storage/*.lock
 
 .claude/
 .DS_Store

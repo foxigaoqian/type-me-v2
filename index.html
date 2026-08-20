@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3f0e9">
+  <title>TYPE ME｜你是哪种大学生物种？</title>
+  <meta name="description" content="12 道不太正经的问题，看看你的校园隐藏人格。">
+  <link rel="stylesheet" href="/assets/styles.css?v=2">
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">TYPE ME</div>
+    <div class="top-actions"><button class="icon-btn" id="homeBtn" aria-label="回到首页">⌂</button></div>
+  </header>
+  <main>
+    <section id="homePage" class="page active">
+      <div class="hero">
+        <span class="eyebrow">CAMPUS PERSONALITY TEST</span>
+        <h1>你是哪种<br>大学生物种？</h1>
+        <p class="sub">12 道不太正经的问题<br>看看你的校园隐藏人格。</p>
+        <div class="meta-row"><span class="meta-chip">约 60 秒</span><span class="meta-chip">免费</span><span class="meta-chip">不用登录</span></div>
+        <button class="primary-btn" id="startBtn">开始测试 →</button>
+        <p class="micro">结果仅供娱乐。认真你就输了。</p>
+      </div>
+      <div class="section">
+        <h2>你可能是……</h2>
+        <div class="preview-grid" id="previewGrid"></div>
+        <div class="hidden-note">还有 4 种隐藏 TYPE。测完才告诉你。</div>
+        <div style="margin-top:18px"><button class="secondary-btn" id="startBtn2">开始测试</button></div>
+      </div>
+      <div id="distributionBlock" class="section" hidden>
+        <h2>最近测出的校园人格</h2>
+        <div class="result-section" id="distributionContent"></div>
+      </div>
+    </section>
+
+    <section id="quizPage" class="page">
+      <div class="quiz-wrap">
+        <div>
+          <div class="quiz-head"><span id="quizCounter">1 / 12</span><span>别想太久，第一反应就行</span></div>
+          <div class="progress"><span id="progressFill" style="width:8.333%"></span></div>
+          <h2 class="question" id="questionText"></h2>
+          <div class="options" id="options"></div>
+        </div>
+        <div class="quiz-bottom"><button class="back-btn" id="prevBtn">← 上一题</button></div>
+      </div>
+    </section>
+
+    <section id="resultPage" class="page">
+      <div id="resultHero" class="result-hero">
+        <div class="type-number" id="resultType"></div>
+        <h1 class="result-name" id="resultName"></h1>
+        <div class="result-en" id="resultEn"></div>
+        <p class="result-core" id="resultCore"></p>
+      </div>
+      <div class="result-section"><h3>你大概是这样</h3><p id="resultDescription"></p></div>
+      <div class="result-section"><h3>人格指标</h3><div id="metrics"></div><p class="notice">娱乐测试结果；指标由本次答题权重换算，不是心理测量或医学结论。</p></div>
+      <div class="result-section"><h3>你的隐藏人格</h3><div class="hidden-personality"><div class="hidden-badge" id="secondaryType"></div><div><div style="font-weight:1000;font-size:20px" id="secondaryName"></div><div class="notice" id="secondaryCore"></div></div></div></div>
+      <div class="result-section"><h3>校园生存技能</h3><p id="skillText"></p></div>
+      <div class="result-section"><h3>致命弱点</h3><p id="weaknessText"></p></div>
+      <div class="result-section"><h3>你们这类人多吗？</h3><div id="populationStat" class="stat-box">样本正在积累中</div><p class="notice" id="populationNote">完成样本不足 100 时不展示比例。</p></div>
+      <div class="result-section">
+        <h3>人格身份证</h3>
+        <div class="share-card-preview" id="identityPreview">
+          <small>TYPE ME · CAMPUS SPECIES</small>
+          <div><div id="cardType" style="font-weight:900"></div><h4 id="cardName"></h4><div id="cardEn" style="font-weight:900;color:#bbb"></div></div>
+          <div><div id="cardCore" style="font-size:20px;font-weight:900;line-height:1.35"></div><div style="margin-top:20px;font-size:12px;color:#aaa">测测你是什么校园物种</div></div>
+        </div>
+        <div style="display:grid;gap:10px;margin-top:16px"><button class="primary-btn" id="generateCardBtn">生成我的人格身份证</button><button class="secondary-btn" id="shareBtn">分享我的人格</button></div>
+        <p class="notice" id="cardStatus">服务端 PNG 生成接口将在确认服务器图像扩展后接入；当前先完成身份卡内容与分享归因链路。</p>
+      </div>
+      <div class="section">
+        <h2>把你的 TYPE 穿出去</h2>
+        <div class="product-box">
+          <div class="product-photo"><div>NEED_REAL_PHOTO<br><span style="font-weight:600;font-size:12px">等待真实男/女正反面上身图</span></div></div>
+          <div class="product-copy">
+            <div class="debug-tag">不虚构面料/克重/真人尺码数据</div>
+            <h3 id="productName" style="font-size:25px;margin:14px 0 4px"></h3>
+            <div class="price"><strong>¥129</strong><del>日常价 ¥139</del></div>
+            <div class="selector"><div class="selector-label">颜色</div><div class="chips" id="colorChips"></div></div>
+            <div class="selector"><div class="selector-label">尺码</div><div class="chips" id="sizeChips"></div></div>
+            <button class="primary-btn" id="buyBtn">穿上我的 TYPE · ¥129</button>
+            <p class="notice">商品真实克重、成分、版型、洗涤、缩水、透度与真人尺码参考待你提供真实数据后补齐。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">支付沿用当前微信 JSAPI / Native 接口，不在 V2 重写支付底座。</p></div></div>
+<div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
+<div class="toast" id="toast"></div>
+<script src="/assets/app.js?v=2"></script>
+</body>
+</html>
