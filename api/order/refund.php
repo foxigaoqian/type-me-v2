@@ -12,6 +12,11 @@ if ($outTradeNo === '') jsonResponse(['code'=>-1,'message'=>'缺少out_trade_no'
 $orders = readOrders();
 if (!isset($orders[$outTradeNo])) jsonResponse(['code'=>-1,'message'=>'订单不存在'],404);
 $order = $orders[$outTradeNo];
+$currentUid = getCurrentUserId();
+$expectedAdmin = (string)(getConfig()['admin_token'] ?? '');
+$providedAdmin = trim((string)($_SERVER['HTTP_X_ADMIN_TOKEN'] ?? ''));
+$isAdmin = $expectedAdmin !== '' && $providedAdmin !== '' && hash_equals($expectedAdmin,$providedAdmin);
+if ((string)($order['uid'] ?? '') !== $currentUid && !$isAdmin) jsonResponse(['code'=>-1,'message'=>'无权操作此订单'],403);
 $status = (string)($order['status'] ?? '');
 if (!in_array($status,['SUCCESS','PAID'],true)) jsonResponse(['code'=>-1,'message'=>'当前订单状态不可退款'],400);
 if (!empty($order['refund_status']) && in_array($order['refund_status'],['PROCESSING','SUCCESS'],true)) {
