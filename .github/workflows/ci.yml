@@ -35,7 +35,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Validate JavaScript syntax
         shell: bash
@@ -50,6 +50,16 @@ jobs:
           python3 -m json.tool config/v2.json >/dev/null
           python3 -m json.tool config/algorithm-v1.json >/dev/null
 
+      - name: Check Vercel container files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s Dockerfile.vercel
+          test -s Caddyfile
+          test -s .dockerignore
+          grep -q 'PORT' Caddyfile
+          grep -q 'api/config.php' Caddyfile
+
       - name: Check secret files are not tracked
         shell: bash
         run: |
@@ -60,3 +70,51 @@ jobs:
             echo "$bad"
             exit 1
           fi
+
+  container-smoke:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Vercel FrankenPHP image
+        run: docker build -f Dockerfile.vercel -t type-me-v2-vercel .
+
+      - name: Boot preview container and verify health
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() { docker rm -f type-me-v2-ci >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+
+          docker run -d \
+            --name type-me-v2-ci \
+            -e PORT=3000 \
+            -e VERCEL=1 \
+            -e VERCEL_ENV=preview \
+            -p 3000:3000 \
+            type-me-v2-vercel
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health.php > /tmp/health.json; then
+              break
+            fi
+            sleep 1
+          done
+
+          cat /tmp/health.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/health.json', encoding='utf-8') as f:
+              data = json.load(f)
+          assert data['ok'] is True, data
+          assert data['runtime'] == 'vercel-container', data
+          assert data['environment'] == 'preview', data
+          assert data['preview_mode'] is True, data
+          for key in ['curl','openssl','pdo_mysql','gd','freetype','mbstring','font']:
+              assert data['checks'][key] is True, (key, data)
+          PY
+
+          status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/config.php)
+          test "$status" = "404"
