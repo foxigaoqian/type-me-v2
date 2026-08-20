@@ -9,10 +9,16 @@ $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' :
 $host = $_SERVER['HTTP_HOST'] ?? '';
 $params = http_build_query(['source'=>'share','referrer_id'=>$uid,'share_id'=>$shareId]);
 $url = $scheme . '://' . $host . '/?' . $params;
-appendNdjson(analyticsStoragePath('shares-v2.ndjson'),[
+$row = [
   'share_id'=>$shareId,'referrer_id'=>$uid,'session_id'=>(string)($body['session_id']??''),
   'primary_personality'=>(string)($body['primary_personality']??''),
   'secondary_personality'=>(string)($body['secondary_personality']??''),
-  'created_at'=>date('c'),'share_url'=>$url
-]);
-jsonResponse(['code'=>0,'share_id'=>$shareId,'referrer_id'=>$uid,'share_url'=>$url]);
+  'created_at'=>date('c'),'share_url'=>$url,'source'=>'result'
+];
+try {
+  dbPersistShare($row);
+  appendNdjson(analyticsStoragePath('shares-v2.ndjson'),$row);
+  jsonResponse(['code'=>0,'share_id'=>$shareId,'referrer_id'=>$uid,'share_url'=>$url]);
+} catch(Throwable $e){
+  jsonResponse(['code'=>-1,'message'=>$e->getMessage()],500);
+}
