@@ -20,11 +20,17 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: curl, openssl
+          extensions: curl, openssl, pdo_mysql, mbstring
           coverage: none
 
       - name: Validate PHP syntax
-        run: find api -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        shell: bash
+        run: |
+          set -euo pipefail
+          find api scripts tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run personality scoring guardrail
+        run: php tests/personality_distribution.php
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -32,10 +38,17 @@ jobs:
           node-version: '20'
 
       - name: Validate JavaScript syntax
-        run: node --check assets/app.js
+        shell: bash
+        run: |
+          set -euo pipefail
+          find assets -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Validate V2 JSON config
-        run: python3 -m json.tool config/v2.json >/dev/null
+      - name: Validate JSON config
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool config/v2.json >/dev/null
+          python3 -m json.tool config/algorithm-v1.json >/dev/null
 
       - name: Check secret files are not tracked
         shell: bash
