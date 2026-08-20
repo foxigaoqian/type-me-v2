@@ -1,0 +1,30 @@
+{
+    auto_https off
+    admin off
+}
+
+:{$PORT:3000} {
+    root * /app
+    encode zstd gzip
+
+    @blocked path \
+        /.env \
+        /.env.* \
+        /certs/* \
+        /migrations/* \
+        /scripts/* \
+        /tests/* \
+        /docs/* \
+        /api/lib/* \
+        /api/config.php \
+        /Dockerfile.vercel \
+        /Caddyfile \
+        /.dockerignore \
+        /storage/*.json \
+        /storage/*.ndjson \
+        /storage/*.lock \
+        /storage/*.log
+    respond @blocked 404
+
+    php_server
+}
