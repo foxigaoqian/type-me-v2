@@ -83,8 +83,6 @@ function renderIdentityCard(array $primary, array $secondary, array $sample, str
 {
     if (!extension_loaded('gd') || !function_exists('imagettftext')) throw new RuntimeException('服务器缺少 GD/FreeType 扩展');
     $font = identityCardFontPath();
-    $dir = (string)getConfig()['storage_cards'];
-    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) throw new RuntimeException('无法创建身份证目录');
 
     $w = 1080; $h = 1920;
     $im = imagecreatetruecolor($w, $h);
@@ -142,13 +140,34 @@ function renderIdentityCard(array $primary, array $secondary, array $sample, str
     drawCardText($im,$font,'娱乐测试结果 · 不是心理测量或医学结论',18,70,1870,$muted);
 
     $filename = 'card_' . bin2hex(random_bytes(12)) . '.png';
+    if (!empty(getConfig()['card_inline_response'])) {
+        ob_start();
+        $ok = imagepng($im, null, 8);
+        $bytes = ob_get_clean();
+        imagedestroy($im);
+        if (!$ok || !is_string($bytes) || $bytes === '') throw new RuntimeException('身份证 PNG 编码失败');
+        return [
+            'filename'=>$filename,
+            'path'=>null,
+            'url'=>'data:image/png;base64,'.base64_encode($bytes),
+            'width'=>$w,
+            'height'=>$h,
+            'inline'=>true,
+        ];
+    }
+
+    $dir = (string)getConfig()['storage_cards'];
+    if (!is_dir($dir) && !mkdir($dir, 0775, true) && !is_dir($dir)) {
+        imagedestroy($im);
+        throw new RuntimeException('无法创建身份证目录');
+    }
     $path = $dir . DIRECTORY_SEPARATOR . $filename;
     if (!imagepng($im, $path, 8)) {
         imagedestroy($im);
         throw new RuntimeException('身份证 PNG 写入失败');
     }
     imagedestroy($im);
-    return ['filename'=>$filename,'path'=>$path,'url'=>'/storage/cards/'.$filename,'width'=>$w,'height'=>$h];
+    return ['filename'=>$filename,'path'=>$path,'url'=>'/storage/cards/'.$filename,'width'=>$w,'height'=>$h,'inline'=>false];
 }
 
 function findOwnedTestResult(string $attemptId, string $uid): ?array
