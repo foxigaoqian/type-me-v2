@@ -1,0 +1,49 @@
+name: V2 CI
+
+on:
+  push:
+    branches: [main, v2-development]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: curl, openssl
+          coverage: none
+
+      - name: Validate PHP syntax
+        run: find api -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate JavaScript syntax
+        run: node --check assets/app.js
+
+      - name: Validate V2 JSON config
+        run: python3 -m json.tool config/v2.json >/dev/null
+
+      - name: Check secret files are not tracked
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad=$(git ls-files | grep -E '(^|/)(\.env|apiclient_.*\.(pem|key)|storage/.*\.(json|ndjson))$' || true)
+          if [ -n "$bad" ]; then
+            echo "Sensitive/runtime files must not be committed:"
+            echo "$bad"
+            exit 1
+          fi
