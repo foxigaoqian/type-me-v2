@@ -1,2 +1,79 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TYPE ME V2 Dashboard</title><style>:root{--bg:#f4f1e9;--ink:#111;--card:#fff;--accent:#f3ff38}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:var(--ink)}.wrap{max-width:1280px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top h1{margin:0;font-size:30px}.auth{display:flex;gap:8px}.auth input,.auth button{border:2px solid #111;border-radius:10px;padding:10px}.auth button{background:#111;color:#fff;font-weight:800}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:16px;box-shadow:3px 3px 0 #111}.k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:20px 0}.section h2{font-size:21px;margin:0 0 10px}.table-wrap{overflow:auto;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}}</style></head><body><div class="wrap"><div class="top"><div><h1>TYPE ME · Dashboard</h1><div class="muted">真实数据 · 最近30日为主</div></div><div class="auth"><input id="token" type="password" placeholder="ADMIN_TOKEN"><button id="load">加载数据</button></div></div><div id="status" class="muted" style="margin-top:10px"></div><div id="app" hidden><div class="grid" id="trafficCards"></div><div class="section"><h2>测试漏斗</h2><div class="grid" id="testCards"></div><div class="table-wrap"><table><thead><tr><th>题目</th><th>到达</th><th>退出</th><th>退出率</th></tr></thead><tbody id="questionRows"></tbody></table></div></div><div class="section"><h2>人格分布</h2><div class="table-wrap"><table><thead><tr><th>TYPE</th><th>人格</th><th>人数</th><th>占比</th></tr></thead><tbody id="personalityRows"></tbody></table></div></div><div class="section"><h2>分享裂变</h2><div class="grid" id="viralCards"></div></div><div class="section"><h2>商品漏斗</h2><div class="grid" id="productCards"></div></div><div class="section"><h2>销售</h2><div class="grid" id="salesCards"></div></div><div class="section"><h2>人格商业价值</h2><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div><div class="section"><h2>渠道价值</h2><div class="table-wrap"><table><thead><tr><th>渠道</th><th>UV</th><th>完成率</th><th>分享率</th><th>商品CTR</th><th>支付率</th></tr></thead><tbody id="channelRows"></tbody></table></div></div><div class="section"><h2>校园来源</h2><div class="table-wrap"><table><thead><tr><th>school_id</th><th>完成测试</th><th>分享率</th><th>支付</th></tr></thead><tbody id="schoolRows"></tbody></table></div></div></div></div><script>const $=id=>document.getElementById(id);function card(k,v){return `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`}function money(fen){return `¥${((fen||0)/100).toFixed(2)}`}function pct(v){return `${Number(v||0).toFixed(1)}%`}$('token').value=localStorage.getItem('type_me_admin_token')||'';$('load').onclick=load;async function load(){const token=$('token').value.trim();if(!token){$('status').textContent='请输入 ADMIN_TOKEN';return}localStorage.setItem('type_me_admin_token',token);$('status').textContent='加载中…';const r=await fetch('/api/dashboard/summary.php',{headers:{'X-Admin-Token':token}});if(!r.ok){$('status').textContent=`加载失败：HTTP ${r.status}`;return}const d=await r.json();$('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;render(d)}function render(d){const t=d.traffic||{};$('trafficCards').innerHTML=[['今日 Landing UV',t.today_landing_uv],['昨日 Landing UV',t.yesterday_landing_uv],['7日 Landing UV',t.landing_uv_7d],['30日 Landing UV',t.landing_uv_30d]].map(x=>card(...x)).join('');const f=d.test_funnel||{};$('testCards').innerHTML=[['Landing → Start',pct(f.landing_to_start)],['Start → Complete',pct(f.start_to_complete)],['30日完成测试',f.test_complete||0],['平均测试时长',`${f.average_test_duration_seconds||0}s`]].map(x=>card(...x)).join('');$('questionRows').innerHTML=(f.questions||[]).map(x=>`<tr><td>Q${x.question}</td><td>${x.reached}</td><td>${x.exits}</td><td>${pct(x.exit_rate)}</td></tr>`).join('');const pd=d.personality_distribution||{};$('personalityRows').innerHTML=(pd.items||[]).map(x=>`<tr><td>${x.type}</td><td><b>${x.name}</b></td><td>${x.count}</td><td>${pd.total>=100?pct(x.percent):'<span class="pill">样本积累中</span>'}</td></tr>`).join('');const v=d.viral||{};$('viralCards').innerHTML=[['Result Views',v.result_views],['Share Rate',pct(v.share_rate)],['Share Open Rate',pct(v.share_open_rate)],['K-factor',v.k_factor||0]].map(x=>card(...x)).join('');const p=d.product_funnel||{};$('productCards').innerHTML=[['Result → Product',pct(p.result_to_product_ctr)],['Product → Add Cart',pct(p.product_to_add_cart)],['Product → Checkout',pct(p.product_to_checkout)],['Product → Paid',pct(p.product_to_paid)]].map(x=>card(...x)).join('');const s=d.sales||{};$('salesCards').innerHTML=[['今日订单',s.today_orders||0],['今日 GMV',money(s.today_gmv_fen)],['30日 GMV',money(s.gmv_30d_fen)],['AOV',money(s.aov_fen)],['30日支付人数',s.paid_users_30d||0],['退款率',pct(s.refund_rate)]].map(x=>card(...x)).join('');$('valueRows').innerHTML=(d.personality_value||[]).map(x=>`<tr><td><b>${x.name}</b></td><td>${x.tests}</td><td>${pct(x.share_rate)}</td><td>${pct(x.product_ctr)}</td><td>${pct(x.paid_rate)}</td><td>${x.paid}</td></tr>`).join('');$('channelRows').innerHTML=(d.channel_value||[]).map(x=>`<tr><td><b>${x.source}</b></td><td>${x.uv}</td><td>${pct(x.complete_rate)}</td><td>${pct(x.share_rate)}</td><td>${pct(x.product_ctr)}</td><td>${pct(x.paid_rate)}</td></tr>`).join('');$('schoolRows').innerHTML=(d.school_value||[]).map(x=>`<tr><td>${x.school_id}</td><td>${x.complete}</td><td>${pct(x.share_rate)}</td><td>${x.paid}</td></tr>`).join('')||'<tr><td colspan="4">暂无 school_id 数据</td></tr>'}if($('token').value)load();</script></body></html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>TYPE ME V2 Dashboard</title>
+  <style>
+    :root{--bg:#f4f1e9;--ink:#111;--card:#fff;--accent:#f3ff38}*{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:var(--ink)}
+    .wrap{max-width:1280px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top h1{margin:0;font-size:30px}
+    .auth{display:flex;gap:8px}.auth input,.auth button{border:2px solid #111;border-radius:10px;padding:10px}.auth button{background:#111;color:#fff;font-weight:800}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:16px;box-shadow:3px 3px 0 #111}
+    .k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:20px 0}.section h2{font-size:21px;margin:0 0 10px}
+    .table-wrap{overflow:auto;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}
+    @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>TYPE ME · Dashboard</h1><div class="muted">真实数据 · 最近30日为主</div></div>
+    <div class="auth"><input id="token" type="password" autocomplete="off" placeholder="ADMIN_TOKEN"><button id="load">加载数据</button></div>
+  </div>
+  <div id="status" class="muted" style="margin-top:10px"></div>
+  <div id="app" hidden>
+    <div class="grid" id="trafficCards"></div>
+    <div class="section"><h2>测试漏斗</h2><div class="grid" id="testCards"></div><div class="table-wrap"><table><thead><tr><th>题目</th><th>到达</th><th>退出</th><th>退出率</th></tr></thead><tbody id="questionRows"></tbody></table></div></div>
+    <div class="section"><h2>人格分布</h2><div class="table-wrap"><table><thead><tr><th>TYPE</th><th>人格</th><th>人数</th><th>占比</th></tr></thead><tbody id="personalityRows"></tbody></table></div></div>
+    <div class="section"><h2>分享裂变</h2><div class="grid" id="viralCards"></div></div>
+    <div class="section"><h2>商品漏斗</h2><div class="grid" id="productCards"></div></div>
+    <div class="section"><h2>销售</h2><div class="grid" id="salesCards"></div></div>
+    <div class="section"><h2>人格商业价值</h2><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div>
+    <div class="section"><h2>渠道价值</h2><div class="table-wrap"><table><thead><tr><th>渠道</th><th>UV</th><th>完成率</th><th>分享率</th><th>商品CTR</th><th>支付率</th></tr></thead><tbody id="channelRows"></tbody></table></div></div>
+    <div class="section"><h2>校园来源</h2><div class="table-wrap"><table><thead><tr><th>school_id</th><th>完成测试</th><th>分享率</th><th>支付</th></tr></thead><tbody id="schoolRows"></tbody></table></div></div>
+  </div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+const num=value=>Number.isFinite(Number(value))?Number(value):0;
+function card(k,v){return `<div class="card"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`}
+function money(fen){return `¥${(num(fen)/100).toFixed(2)}`}
+function pct(v){return `${num(v).toFixed(1)}%`}
+$('load').onclick=load;
+$('token').addEventListener('keydown',e=>{if(e.key==='Enter')load()});
+async function load(){
+  const token=$('token').value.trim();
+  if(!token){$('status').textContent='请输入 ADMIN_TOKEN';return}
+  $('status').textContent='加载中…';$('app').hidden=true;
+  try{
+    const r=await fetch('/api/dashboard/summary.php',{headers:{'X-Admin-Token':token},cache:'no-store',credentials:'same-origin'});
+    if(!r.ok){$('status').textContent=`加载失败：HTTP ${r.status}`;return}
+    const d=await r.json();
+    $('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;render(d);
+  }catch(e){$('status').textContent='加载失败：网络错误'}
+}
+function render(d){
+  const t=d.traffic||{};
+  $('trafficCards').innerHTML=[['今日 Landing UV',t.today_landing_uv],['昨日 Landing UV',t.yesterday_landing_uv],['7日 Landing UV',t.landing_uv_7d],['30日 Landing UV',t.landing_uv_30d]].map(x=>card(...x)).join('');
+  const f=d.test_funnel||{};
+  $('testCards').innerHTML=[['Landing → Start',pct(f.landing_to_start)],['Start → Complete',pct(f.start_to_complete)],['30日完成测试',num(f.test_complete)],['平均测试时长',`${num(f.average_test_duration_seconds)}s`]].map(x=>card(...x)).join('');
+  $('questionRows').innerHTML=(f.questions||[]).map(x=>`<tr><td>Q${num(x.question)}</td><td>${num(x.reached)}</td><td>${num(x.exits)}</td><td>${esc(pct(x.exit_rate))}</td></tr>`).join('');
+  const pd=d.personality_distribution||{};
+  $('personalityRows').innerHTML=(pd.items||[]).map(x=>`<tr><td>${esc(x.type)}</td><td><b>${esc(x.name)}</b></td><td>${num(x.count)}</td><td>${num(pd.total)>=100?esc(pct(x.percent)):'<span class="pill">样本积累中</span>'}</td></tr>`).join('');
+  const v=d.viral||{};
+  $('viralCards').innerHTML=[['Result Views',num(v.result_views)],['Share Rate',pct(v.share_rate)],['Share Open Rate',pct(v.share_open_rate)],['K-factor',num(v.k_factor)]].map(x=>card(...x)).join('');
+  const p=d.product_funnel||{};
+  $('productCards').innerHTML=[['Result → Product',pct(p.result_to_product_ctr)],['Product → Add Cart',pct(p.product_to_add_cart)],['Product → Checkout',pct(p.product_to_checkout)],['Product → Paid',pct(p.product_to_paid)]].map(x=>card(...x)).join('');
+  const s=d.sales||{};
+  $('salesCards').innerHTML=[['今日订单',num(s.today_orders)],['今日 GMV',money(s.today_gmv_fen)],['30日 GMV',money(s.gmv_30d_fen)],['AOV',money(s.aov_fen)],['30日支付人数',num(s.paid_users_30d)],['退款率',pct(s.refund_rate)]].map(x=>card(...x)).join('');
+  $('valueRows').innerHTML=(d.personality_value||[]).map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${num(x.tests)}</td><td>${esc(pct(x.share_rate))}</td><td>${esc(pct(x.product_ctr))}</td><td>${esc(pct(x.paid_rate))}</td><td>${num(x.paid)}</td></tr>`).join('');
+  $('channelRows').innerHTML=(d.channel_value||[]).map(x=>`<tr><td><b>${esc(x.source)}</b></td><td>${num(x.uv)}</td><td>${esc(pct(x.complete_rate))}</td><td>${esc(pct(x.share_rate))}</td><td>${esc(pct(x.product_ctr))}</td><td>${esc(pct(x.paid_rate))}</td></tr>`).join('');
+  $('schoolRows').innerHTML=(d.school_value||[]).map(x=>`<tr><td>${esc(x.school_id)}</td><td>${num(x.complete)}</td><td>${esc(pct(x.share_rate))}</td><td>${num(x.paid)}</td></tr>`).join('')||'<tr><td colspan="4">暂无 school_id 数据</td></tr>';
+}
+</script>
+</body>
+</html>
