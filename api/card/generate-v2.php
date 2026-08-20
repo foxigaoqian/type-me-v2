@@ -27,7 +27,7 @@ try {
     $params = http_build_query(['source'=>'share','referrer_id'=>$uid,'share_id'=>$shareId]);
     $shareUrl = $scheme . '://' . $host . '/?' . $params;
 
-    appendNdjson(analyticsStoragePath('shares-v2.ndjson'),[
+    $shareRow = [
         'share_id'=>$shareId,
         'referrer_id'=>$uid,
         'session_id'=>$sessionId,
@@ -36,7 +36,9 @@ try {
         'created_at'=>date('c'),
         'share_url'=>$shareUrl,
         'source'=>'identity_card',
-    ]);
+    ];
+    dbPersistShare($shareRow);
+    appendNdjson(analyticsStoragePath('shares-v2.ndjson'),$shareRow);
 
     $card = renderIdentityCard($result['primary'],$result['secondary'],$sample,$shareUrl);
     trackEvent('identity_card_generate',[
