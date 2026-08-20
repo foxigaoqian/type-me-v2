@@ -17,8 +17,8 @@ $row = [
     'share_id'=>(string)($body['share_id']??'')
 ];
 try {
-    dbPersistAttempt($row);
     appendNdjson(analyticsStoragePath('test-attempts.ndjson'), $row);
+    bestEffortDb(static fn() => dbPersistAttempt($row), 'test_start');
     jsonResponse(['code'=>0,'attempt_id'=>$attemptId]);
 } catch (Throwable $e) {
     jsonResponse(['code'=>-1,'message'=>$e->getMessage()],500);
