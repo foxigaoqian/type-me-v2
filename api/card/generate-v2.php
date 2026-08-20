@@ -12,7 +12,7 @@ if ($attemptId === '') jsonResponse(['code'=>-1,'message'=>'attempt_id required'
 
 try {
     $uid = getCurrentUserId();
-    $row = findOwnedTestResult($attemptId, $uid);
+    $row = dbFindOwnedResult($attemptId,$uid) ?: findOwnedTestResult($attemptId,$uid);
     if (!$row) jsonResponse(['code'=>-1,'message'=>'未找到当前用户的测试结果'],404);
 
     $answers = $row['answers'] ?? [];
