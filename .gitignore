@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+
+certs/*.pem
+certs/*.key
+storage/*.json
+
+.claude/
+.DS_Store
+node_modules/
+npm-debug.log*
+
+# Local/runtime files
+*.log
