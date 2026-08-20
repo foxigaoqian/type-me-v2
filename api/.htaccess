@@ -1,0 +1,20 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteRule ^pay/unified-order$ pay/unified-order.php [L,QSA]
+RewriteRule ^pay/status$ pay/status.php [L,QSA]
+RewriteRule ^wechat/notify$ wechat/notify.php [L,QSA]
+RewriteRule ^wechat/refund-notify$ wechat/refund-notify.php [L,QSA]
+RewriteRule ^wechat/jssdk-sign$ wechat/jssdk-sign.php [L,QSA]
+RewriteRule ^order/list$ order/list.php [L,QSA]
+RewriteRule ^order/my$ order/my.php [L,QSA]
+RewriteRule ^order/refund$ order/refund.php [L,QSA]
+RewriteRule ^events/track$ events/track.php [L,QSA]
+RewriteRule ^test/start-v2$ test/start-v2.php [L,QSA]
+RewriteRule ^test/answer-v2$ test/answer-v2.php [L,QSA]
+RewriteRule ^test/complete-v2$ test/complete-v2.php [L,QSA]
+RewriteRule ^test/distribution-v2$ test/distribution-v2.php [L,QSA]
+RewriteRule ^share/create-v2$ share/create-v2.php [L,QSA]
+RewriteRule ^share/open-v2$ share/open-v2.php [L,QSA]
+RewriteRule ^dashboard/summary$ dashboard/summary.php [L,QSA]
