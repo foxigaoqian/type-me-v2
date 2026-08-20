@@ -31,6 +31,10 @@ function getConfig(): array
     };
     $reservationTtl = (int)($get('ORDER_RESERVATION_TTL_MINUTES') ?: '30');
     if ($reservationTtl < 5 || $reservationTtl > 120) $reservationTtl = 30;
+    $privateStorage = trim($get('PRIVATE_STORAGE_PATH'));
+    if ($privateStorage === '') {
+        $privateStorage = dirname($root) . DIRECTORY_SEPARATOR . 'type-me-v2-private-storage';
+    }
     $config = [
         'mchid' => $get('MCHID'),
         'appid' => $get('APPID'),
@@ -47,9 +51,10 @@ function getConfig(): array
         'db_user' => $get('DB_USER'),
         'db_pass' => $get('DB_PASS'),
         'order_reservation_ttl_minutes' => $reservationTtl,
+        'private_storage_path' => $privateStorage,
         'private_key_path' => $root . DIRECTORY_SEPARATOR . 'certs' . DIRECTORY_SEPARATOR . 'apiclient_key.pem',
-        'storage_orders' => $root . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'orders.json',
-        'storage_share' => $root . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'share.json',
+        'storage_orders' => $privateStorage . DIRECTORY_SEPARATOR . 'orders.json',
+        'storage_share' => $privateStorage . DIRECTORY_SEPARATOR . 'share.json',
         'storage_cards' => $root . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'cards',
     ];
     return $config;
