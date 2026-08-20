@@ -1,0 +1,39 @@
+{
+  "version": "campus-zscore-v1",
+  "status": "frozen-for-v1",
+  "approved_by_product": true,
+  "method": "Keep semantic +3/+2/+1 answer weights, then standardize each personality against its neutral uniform-answer baseline before ranking.",
+  "ranking": [
+    "highest standardized 12-question score",
+    "highest standardized last-4-question score",
+    "explicit tie_choice when supplied",
+    "stable SHA-256 answer/personality seed"
+  ],
+  "display_index": "clamp(0, 100, 50 + z_score * 15)",
+  "reason": "Raw sums structurally favored personalities that appear in more answer weights. Normalization removes that built-in advantage without forcing real user results to be equal.",
+  "calibration": {
+    "simulation_samples": 300000,
+    "neutral_answer_model": "each of 5 options equally likely",
+    "raw_algorithm_observed_percent": {
+      "periodic": 7.64,
+      "suiyuan": 35.89,
+      "zuiying": 1.18,
+      "night": 0.31,
+      "boundary": 21.85,
+      "rebellious": 0.42,
+      "crazy": 18.92,
+      "awake": 13.79
+    },
+    "normalized_algorithm_observed_percent": {
+      "periodic": 13.73,
+      "suiyuan": 13.47,
+      "zuiying": 12.32,
+      "night": 12.27,
+      "boundary": 12.12,
+      "rebellious": 12.25,
+      "crazy": 12.09,
+      "awake": 11.75
+    }
+  },
+  "guardrail": "CI simulation should keep neutral-model primary personality share within a broad 8%-18% band. This is a bias detector, not a requirement that production users distribute evenly."
+}
