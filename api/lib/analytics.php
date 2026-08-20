@@ -12,9 +12,51 @@ function analyticsStoragePath(string $name): string
 function appendNdjson(string $file, array $row): void
 {
     $dir = dirname($file);
-    if (!is_dir($dir)) mkdir($dir, 0775, true);
+    if (!is_dir($dir) && !mkdir($dir, 0770, true) && !is_dir($dir)) {
+        throw new RuntimeException('无法创建私有数据目录');
+    }
     $line = json_encode($row, JSON_UNESCAPED_UNICODE) . PHP_EOL;
-    file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
+    if (file_put_contents($file, $line, FILE_APPEND | LOCK_EX) === false) {
+        throw new RuntimeException('运行数据写入失败');
+    }
+}
+
+function readNdjson(string $file): array
+{
+    if (!is_file($file)) return [];
+    $rows = [];
+    $fh = fopen($file, 'rb');
+    if (!$fh) return [];
+    while (($line = fgets($fh)) !== false) {
+        $line = trim($line);
+        if ($line === '') continue;
+        $row = json_decode($line, true);
+        if (is_array($row)) $rows[] = $row;
+    }
+    fclose($fh);
+    return $rows;
+}
+
+function bestEffortDb(callable $operation, string $context): void
+{
+    try {
+        $operation();
+    } catch (Throwable $e) {
+        error_log('[TYPE-ME DB fallback][' . $context . '] ' . $e->getMessage());
+    }
+}
+
+function assertFileAttemptOwner(string $attemptId, string $uid): void
+{
+    if ($attemptId === '') throw new RuntimeException('attempt_id required');
+    $rows = readNdjson(analyticsStoragePath('test-attempts.ndjson'));
+    for ($i = count($rows)-1; $i >= 0; $i--) {
+        $row = $rows[$i];
+        if ((string)($row['attempt_id'] ?? '') !== $attemptId) continue;
+        if (!hash_equals((string)($row['uid'] ?? ''), $uid)) throw new RuntimeException('测试 attempt 不属于当前用户');
+        return;
+    }
+    throw new RuntimeException('测试 attempt 不存在');
 }
 
 function cleanEventField($value): string
@@ -30,9 +72,7 @@ function trackEvent(string $eventName, array $payload = []): array
         'viral_test_complete','product_view','color_select','size_select','add_cart','checkout_start',
         'payment_success','refund'
     ];
-    if (!in_array($eventName, $allowed, true)) {
-        throw new InvalidArgumentException('Unsupported event_name');
-    }
+    if (!in_array($eventName, $allowed, true)) throw new InvalidArgumentException('Unsupported event_name');
 
     $row = [
         'event_id' => 'evt_' . bin2hex(random_bytes(10)),
@@ -53,28 +93,11 @@ function trackEvent(string $eventName, array $payload = []): array
         'sku_id' => cleanEventField($payload['sku_id'] ?? ''),
         'order_id' => cleanEventField($payload['order_id'] ?? ''),
     ];
-
     foreach (['attempt_id','question_id','question_index','answer_index','color','size'] as $extra) {
         if (array_key_exists($extra, $payload)) $row[$extra] = $payload[$extra];
     }
 
-    dbPersistEvent($row);
     appendNdjson(analyticsStoragePath('events.ndjson'), $row);
+    bestEffortDb(static fn() => dbPersistEvent($row), 'event:' . $eventName);
     return $row;
-}
-
-function readNdjson(string $file): array
-{
-    if (!is_file($file)) return [];
-    $rows = [];
-    $fh = fopen($file, 'rb');
-    if (!$fh) return [];
-    while (($line = fgets($fh)) !== false) {
-        $line = trim($line);
-        if ($line === '') continue;
-        $row = json_decode($line, true);
-        if (is_array($row)) $rows[] = $row;
-    }
-    fclose($fh);
-    return $rows;
 }
