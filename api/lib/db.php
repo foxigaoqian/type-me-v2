@@ -135,3 +135,13 @@ function dbMarkRefund(string $outTradeNo, string $outRefundNo, string $status, i
     $stmt->execute([$outRefundNo,$outTradeNo,$refundFen,$totalFen,$status]);
     if ($status === 'SUCCESS') $pdo->prepare('UPDATE orders SET status="REFUNDED" WHERE out_trade_no=? AND status="PAID"')->execute([$outTradeNo]);
 }
+
+function dbExpiredPendingOrders(int $ttlMinutes, int $limit = 100): array
+{
+    $pdo = dbConnection();
+    if (!$pdo) return [];
+    $ttlMinutes = max(5,min(120,$ttlMinutes));
+    $limit = max(1,min(500,$limit));
+    $sql = 'SELECT out_trade_no,created_at FROM orders WHERE status="PENDING_PAYMENT" AND created_at < (CURRENT_TIMESTAMP(3) - INTERVAL ' . $ttlMinutes . ' MINUTE) ORDER BY created_at ASC LIMIT ' . $limit;
+    return $pdo->query($sql)->fetchAll() ?: [];
+}
