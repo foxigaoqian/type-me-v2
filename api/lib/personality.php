@@ -92,14 +92,18 @@ function scoreAnswers(array $answers, ?string $tieChoice = null): array
 
 function appendTestResult(array $row): void
 {
-    dbPersistResult($row);
     appendNdjson(analyticsStoragePath('test-results.ndjson'), $row);
+    bestEffortDb(static fn() => dbPersistResult($row), 'test_result');
 }
 
 function personalitySample(string $key): array
 {
-    $dbSample = dbPersonalitySample($key);
-    if ($dbSample !== null) return $dbSample;
+    try {
+        $dbSample = dbPersonalitySample($key);
+        if ($dbSample !== null) return $dbSample;
+    } catch (Throwable $e) {
+        error_log('[TYPE-ME DB fallback][personality_sample] ' . $e->getMessage());
+    }
 
     $rows = readNdjson(analyticsStoragePath('test-results.ndjson'));
     $total = 0;
