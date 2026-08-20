@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/wechat_pay.php';
+require_once __DIR__ . '/db_analytics.php';
 
 function analyticsStoragePath(string $name): string
 {
@@ -57,6 +58,7 @@ function trackEvent(string $eventName, array $payload = []): array
         if (array_key_exists($extra, $payload)) $row[$extra] = $payload[$extra];
     }
 
+    dbPersistEvent($row);
     appendNdjson(analyticsStoragePath('events.ndjson'), $row);
     return $row;
 }
