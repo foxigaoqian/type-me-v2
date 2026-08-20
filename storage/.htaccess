@@ -1,0 +1,7 @@
+Options -Indexes
+
+<FilesMatch "\.(json|ndjson|lock|log)$">
+  Require all denied
+</FilesMatch>
+
+# Generated identity card PNG files under storage/cards remain public by design.
