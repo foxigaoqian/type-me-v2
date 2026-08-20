@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/wechat_pay.php';
+require_once dirname(__DIR__) . '/lib/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonResponse(['code'=>'FAIL','message'=>'Method Not Allowed'],405);
 $rawBody = file_get_contents('php://input');
@@ -24,7 +25,12 @@ try {
     $transactionId = (string)($decrypted['transaction_id'] ?? '');
     if ($outTradeNo === '' || $tradeState === '') throw new RuntimeException('支付通知订单字段缺失');
 
-    // updateOrderStatus 是按订单号覆盖状态，重复回调保持幂等。
+    if ($tradeState === 'SUCCESS') {
+        dbFinalizePaidOrder($outTradeNo, $transactionId);
+    } elseif (in_array($tradeState, ['CLOSED','REVOKED','PAYERROR'], true)) {
+        dbReleaseReservation($outTradeNo, $tradeState);
+    }
+    // JSON store remains as compatibility mirror until DB migration is fully cut over.
     updateOrderStatus($outTradeNo, $tradeState, $transactionId);
     jsonResponse(['code'=>'SUCCESS','message'=>'成功']);
 } catch (Throwable $e) {
