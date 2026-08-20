@@ -12,7 +12,10 @@ if ($attemptId === '') jsonResponse(['code'=>-1,'message'=>'attempt_id required'
 
 try {
     $uid = getCurrentUserId();
-    $row = dbFindOwnedResult($attemptId,$uid) ?: findOwnedTestResult($attemptId,$uid);
+    $row = null;
+    try { $row = dbFindOwnedResult($attemptId,$uid); }
+    catch(Throwable $e) { error_log('[TYPE-ME DB fallback][identity_card_result] '.$e->getMessage()); }
+    if (!$row) $row = findOwnedTestResult($attemptId,$uid);
     if (!$row) jsonResponse(['code'=>-1,'message'=>'未找到当前用户的测试结果'],404);
 
     $answers = $row['answers'] ?? [];
@@ -22,8 +25,8 @@ try {
 
     $shareId = 'shr_' . bin2hex(random_bytes(10));
     $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = (string)($_SERVER['HTTP_HOST'] ?? '');
-    if ($host === '') throw new RuntimeException('无法确定站点域名');
+    $host = trim((string)($_SERVER['HTTP_HOST'] ?? ''));
+    if (!preg_match('/^[A-Za-z0-9.-]+(?::\d{1,5})?$/',$host)) throw new RuntimeException('无效站点域名');
     $params = http_build_query(['source'=>'share','referrer_id'=>$uid,'share_id'=>$shareId]);
     $shareUrl = $scheme . '://' . $host . '/?' . $params;
 
@@ -37,8 +40,8 @@ try {
         'share_url'=>$shareUrl,
         'source'=>'identity_card',
     ];
-    dbPersistShare($shareRow);
     appendNdjson(analyticsStoragePath('shares-v2.ndjson'),$shareRow);
+    bestEffortDb(static fn() => dbPersistShare($shareRow), 'identity_card_share');
 
     $card = renderIdentityCard($result['primary'],$result['secondary'],$sample,$shareUrl);
     trackEvent('identity_card_generate',[
