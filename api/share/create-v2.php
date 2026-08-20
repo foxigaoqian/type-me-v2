@@ -6,7 +6,8 @@ $body = readJsonBody();
 $uid = getCurrentUserId();
 $shareId = 'shr_' . bin2hex(random_bytes(10));
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? '';
+$host = trim((string)($_SERVER['HTTP_HOST'] ?? ''));
+if (!preg_match('/^[A-Za-z0-9.-]+(?::\d{1,5})?$/',$host)) jsonResponse(['code'=>-1,'message'=>'无效站点域名'],400);
 $params = http_build_query(['source'=>'share','referrer_id'=>$uid,'share_id'=>$shareId]);
 $url = $scheme . '://' . $host . '/?' . $params;
 $row = [
@@ -16,8 +17,8 @@ $row = [
   'created_at'=>date('c'),'share_url'=>$url,'source'=>'result'
 ];
 try {
-  dbPersistShare($row);
   appendNdjson(analyticsStoragePath('shares-v2.ndjson'),$row);
+  bestEffortDb(static fn() => dbPersistShare($row), 'share_create');
   jsonResponse(['code'=>0,'share_id'=>$shareId,'referrer_id'=>$uid,'share_url'=>$url]);
 } catch(Throwable $e){
   jsonResponse(['code'=>-1,'message'=>$e->getMessage()],500);
