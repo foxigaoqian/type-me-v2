@@ -92,11 +92,15 @@ function scoreAnswers(array $answers, ?string $tieChoice = null): array
 
 function appendTestResult(array $row): void
 {
+    dbPersistResult($row);
     appendNdjson(analyticsStoragePath('test-results.ndjson'), $row);
 }
 
 function personalitySample(string $key): array
 {
+    $dbSample = dbPersonalitySample($key);
+    if ($dbSample !== null) return $dbSample;
+
     $rows = readNdjson(analyticsStoragePath('test-results.ndjson'));
     $total = 0;
     $count = 0;
