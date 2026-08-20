@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/wechat_pay.php';
+require_once dirname(__DIR__) . '/lib/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonResponse(['code'=>'FAIL','message'=>'Method Not Allowed'],405);
 $rawBody = file_get_contents('php://input');
@@ -22,8 +23,14 @@ try {
     $outTradeNo = (string)($decrypted['out_trade_no'] ?? '');
     $outRefundNo = (string)($decrypted['out_refund_no'] ?? '');
     $refundStatus = (string)($decrypted['refund_status'] ?? '');
-    if ($outTradeNo === '' || $refundStatus === '') throw new RuntimeException('退款通知订单字段缺失');
+    $amount = isset($decrypted['amount']) && is_array($decrypted['amount']) ? $decrypted['amount'] : [];
+    $refundFen = (int)($amount['refund'] ?? 0);
+    $totalFen = (int)($amount['total'] ?? 0);
+    if ($outTradeNo === '' || $outRefundNo === '' || $refundStatus === '') throw new RuntimeException('退款通知订单字段缺失');
 
+    dbMarkRefund($outTradeNo,$outRefundNo,$refundStatus,$refundFen,$totalFen);
+
+    // JSON mirror retained only for compatibility until full cutover.
     $orders = readOrders();
     if (isset($orders[$outTradeNo])) {
         $orders[$outTradeNo]['refund_status'] = $refundStatus;
