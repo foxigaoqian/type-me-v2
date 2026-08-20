@@ -70,7 +70,7 @@
           <div><div id="cardCore" style="font-size:20px;font-weight:900;line-height:1.35"></div><div style="margin-top:20px;font-size:12px;color:#aaa">测测你是什么校园物种</div></div>
         </div>
         <div style="display:grid;gap:10px;margin-top:16px"><button class="primary-btn" id="generateCardBtn">生成我的人格身份证</button><button class="secondary-btn" id="shareBtn">分享我的人格</button></div>
-        <p class="notice" id="cardStatus">服务端 PNG 生成接口将在确认服务器图像扩展后接入；当前先完成身份卡内容与分享归因链路。</p>
+        <p class="notice" id="cardStatus">点击后由服务端生成 1080×1920 PNG，并为二维码创建独立 share_id。</p>
       </div>
       <div class="section">
         <h2>把你的 TYPE 穿出去</h2>
@@ -94,5 +94,6 @@
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast"></div>
 <script src="/assets/app.js?v=2"></script>
+<script src="/assets/card-ui.js?v=2"></script>
 </body>
 </html>
