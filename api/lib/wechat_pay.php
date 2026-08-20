@@ -138,9 +138,51 @@ function buildJsapiPayParams(string $prepayId): array
     return ['appId' => $config['appid'], 'timeStamp' => $timeStamp, 'nonceStr' => $nonceStr, 'package' => $package, 'signType' => 'RSA', 'paySign' => $paySign];
 }
 
+function resolvePlatformCertPath(string $path): string
+{
+    if ($path === '') throw new RuntimeException('未配置微信支付平台证书路径');
+    if ($path[0] === '/' || preg_match('/^[A-Za-z]:[\\\\\/]/', $path)) return $path;
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
+}
+
+function verifyWechatPayCallbackSignature(string $rawBody): void
+{
+    $timestamp = trim((string)($_SERVER['HTTP_WECHATPAY_TIMESTAMP'] ?? ''));
+    $nonce = trim((string)($_SERVER['HTTP_WECHATPAY_NONCE'] ?? ''));
+    $signature = trim((string)($_SERVER['HTTP_WECHATPAY_SIGNATURE'] ?? ''));
+    $serial = strtoupper(ltrim(trim((string)($_SERVER['HTTP_WECHATPAY_SERIAL'] ?? '')), '0'));
+
+    if ($timestamp === '' || $nonce === '' || $signature === '' || $serial === '') {
+        throw new RuntimeException('微信支付回调验签头缺失');
+    }
+    if (!ctype_digit($timestamp) || abs(time() - (int)$timestamp) > 300) {
+        throw new RuntimeException('微信支付回调时间戳无效或已过期');
+    }
+
+    $certPath = resolvePlatformCertPath((string)(getConfig()['platform_cert_path'] ?? ''));
+    if (!is_file($certPath)) throw new RuntimeException('微信支付平台证书不存在');
+    $certPem = file_get_contents($certPath);
+    if ($certPem === false || $certPem === '') throw new RuntimeException('读取微信支付平台证书失败');
+
+    $cert = openssl_x509_read($certPem);
+    if ($cert === false) throw new RuntimeException('微信支付平台证书格式无效');
+    $certInfo = openssl_x509_parse($cert);
+    $certSerial = strtoupper(ltrim((string)($certInfo['serialNumberHex'] ?? ''), '0'));
+    if ($certSerial !== '' && $serial !== $certSerial) {
+        throw new RuntimeException('微信支付回调证书序列号不匹配');
+    }
+
+    $decodedSignature = base64_decode($signature, true);
+    if ($decodedSignature === false) throw new RuntimeException('微信支付回调签名格式无效');
+    $message = $timestamp . "\n" . $nonce . "\n" . $rawBody . "\n";
+    $verify = openssl_verify($message, $decodedSignature, $certPem, OPENSSL_ALGO_SHA256);
+    if ($verify !== 1) throw new RuntimeException('微信支付回调签名校验失败');
+}
+
 function decryptNotifyResource(string $ciphertext, string $nonce, string $associatedData): array
 {
     $key = getConfig()['api_v3_key'];
+    if (strlen((string)$key) !== 32) throw new RuntimeException('API_V3_KEY 长度必须为32字节');
     $raw = base64_decode($ciphertext, true);
     if ($raw === false || strlen($raw) < 17) throw new RuntimeException('无效ciphertext');
     $authTag = substr($raw, -16);
