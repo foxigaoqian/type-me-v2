@@ -128,6 +128,9 @@ function dbMarkRefund(string $outTradeNo, string $outRefundNo, string $status, i
 {
     $pdo = dbConnection();
     if (!$pdo) return;
+    $check = $pdo->prepare('SELECT 1 FROM orders WHERE out_trade_no=? LIMIT 1');
+    $check->execute([$outTradeNo]);
+    if (!$check->fetchColumn()) return; // legacy JSON-only order during migration
     $stmt = $pdo->prepare('INSERT INTO refunds (out_refund_no,out_trade_no,refund_fen,total_fen,status) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE status=VALUES(status),refund_fen=VALUES(refund_fen),total_fen=VALUES(total_fen)');
     $stmt->execute([$outRefundNo,$outTradeNo,$refundFen,$totalFen,$status]);
     if ($status === 'SUCCESS') $pdo->prepare('UPDATE orders SET status="REFUNDED" WHERE out_trade_no=? AND status="PAID"')->execute([$outTradeNo]);
