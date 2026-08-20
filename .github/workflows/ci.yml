@@ -71,6 +71,54 @@ jobs:
             exit 1
           fi
 
+  inventory-smoke:
+    needs: validate
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: roottest
+          MYSQL_DATABASE: type_me_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proottest"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq default-mysql-client
+
+      - name: Apply production migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/001_init.sql
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/002_seed_personality_products.sql
+          count=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e 'SELECT COUNT(*) FROM skus')
+          test "$count" = "96"
+
+      - name: Run transactional inventory smoke test
+        env:
+          DB_DSN: mysql:host=127.0.0.1;port=3306;dbname=type_me_test;charset=utf8mb4
+          DB_USER: root
+          DB_PASS: roottest
+        run: php tests/inventory_smoke.php
+
   container-smoke:
     needs: validate
     runs-on: ubuntu-latest
