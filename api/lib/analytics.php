@@ -6,7 +6,7 @@ require_once __DIR__ . '/db_analytics.php';
 
 function analyticsStoragePath(string $name): string
 {
-    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . $name;
+    return rtrim((string)getConfig()['private_storage_path'], '/\\') . DIRECTORY_SEPARATOR . $name;
 }
 
 function appendNdjson(string $file, array $row): void
