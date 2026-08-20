@@ -21,7 +21,7 @@ function dbPersistEvent(array $row): void
 function dbPersistAttempt(array $row): void
 {
     $pdo = dbConnection(); if (!$pdo) return;
-    $stmt = $pdo->prepare('INSERT INTO test_attempts (attempt_id,uid,session_id,source,campaign,school_id,creator_id,referrer_id,share_id) VALUES (?,?,?,?,?,?,?,?,?)');
+    $stmt = $pdo->prepare('INSERT IGNORE INTO test_attempts (attempt_id,uid,session_id,source,campaign,school_id,creator_id,referrer_id,share_id) VALUES (?,?,?,?,?,?,?,?,?)');
     $stmt->execute([$row['attempt_id'],$row['uid'],$row['session_id'] ?? '',$row['source'] ?? 'direct',$row['campaign'] ?? '',$row['school_id'] ?? '',$row['creator_id'] ?? '',$row['referrer_id'] ?? '',$row['share_id'] ?? '']);
 }
 
@@ -37,6 +37,8 @@ function dbPersistResult(array $row): void
     $pdo = dbConnection(); if (!$pdo) return;
     $pdo->beginTransaction();
     try {
+        $ensure = $pdo->prepare('INSERT IGNORE INTO test_attempts (attempt_id,uid,session_id,source,campaign,school_id,creator_id,referrer_id,share_id) VALUES (?,?,?,?,?,?,?,?,?)');
+        $ensure->execute([$row['attempt_id'],$row['uid'],$row['session_id'] ?? '',$row['source'] ?? 'direct',$row['campaign'] ?? '',$row['school_id'] ?? '',$row['creator_id'] ?? '',$row['referrer_id'] ?? '',$row['share_id'] ?? '']);
         $pdo->prepare('UPDATE test_attempts SET completed_at=CURRENT_TIMESTAMP(3) WHERE attempt_id=? AND uid=?')->execute([$row['attempt_id'],$row['uid']]);
         $stmt = $pdo->prepare('INSERT INTO test_results (result_id,attempt_id,uid,primary_personality,secondary_personality,answers_json,scores_json) VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE primary_personality=VALUES(primary_personality),secondary_personality=VALUES(secondary_personality),answers_json=VALUES(answers_json),scores_json=VALUES(scores_json),completed_at=CURRENT_TIMESTAMP(3)');
         $stmt->execute([$row['result_id'],$row['attempt_id'],$row['uid'],$row['primary_personality'],$row['secondary_personality'],json_encode($row['answers'] ?? [],JSON_UNESCAPED_UNICODE),json_encode($row['scores'] ?? [],JSON_UNESCAPED_UNICODE)]);
