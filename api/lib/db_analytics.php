@@ -25,9 +25,20 @@ function dbPersistAttempt(array $row): void
     $stmt->execute([$row['attempt_id'],$row['uid'],$row['session_id'] ?? '',$row['source'] ?? 'direct',$row['campaign'] ?? '',$row['school_id'] ?? '',$row['creator_id'] ?? '',$row['referrer_id'] ?? '',$row['share_id'] ?? '']);
 }
 
+function dbAssertAttemptOwner(PDO $pdo, string $attemptId, string $uid, bool $lock = false): void
+{
+    $sql = 'SELECT uid FROM test_attempts WHERE attempt_id=?' . ($lock ? ' FOR UPDATE' : '');
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$attemptId]);
+    $owner = $stmt->fetchColumn();
+    if ($owner === false) throw new RuntimeException('测试 attempt 不存在');
+    if (!hash_equals((string)$owner, $uid)) throw new RuntimeException('测试 attempt 不属于当前用户');
+}
+
 function dbPersistAnswer(array $row): void
 {
     $pdo = dbConnection(); if (!$pdo) return;
+    dbAssertAttemptOwner($pdo,(string)$row['attempt_id'],(string)$row['uid']);
     $stmt = $pdo->prepare('INSERT INTO test_answers (attempt_id,question_id,answer_index) VALUES (?,?,?) ON DUPLICATE KEY UPDATE answer_index=VALUES(answer_index),answered_at=CURRENT_TIMESTAMP(3)');
     $stmt->execute([$row['attempt_id'],$row['question_id'],(int)$row['answer_index']]);
 }
@@ -39,7 +50,8 @@ function dbPersistResult(array $row): void
     try {
         $ensure = $pdo->prepare('INSERT IGNORE INTO test_attempts (attempt_id,uid,session_id,source,campaign,school_id,creator_id,referrer_id,share_id) VALUES (?,?,?,?,?,?,?,?,?)');
         $ensure->execute([$row['attempt_id'],$row['uid'],$row['session_id'] ?? '',$row['source'] ?? 'direct',$row['campaign'] ?? '',$row['school_id'] ?? '',$row['creator_id'] ?? '',$row['referrer_id'] ?? '',$row['share_id'] ?? '']);
-        $pdo->prepare('UPDATE test_attempts SET completed_at=CURRENT_TIMESTAMP(3) WHERE attempt_id=? AND uid=?')->execute([$row['attempt_id'],$row['uid']]);
+        dbAssertAttemptOwner($pdo,(string)$row['attempt_id'],(string)$row['uid'],true);
+        $pdo->prepare('UPDATE test_attempts SET completed_at=CURRENT_TIMESTAMP(3) WHERE attempt_id=?')->execute([$row['attempt_id']]);
         $stmt = $pdo->prepare('INSERT INTO test_results (result_id,attempt_id,uid,primary_personality,secondary_personality,answers_json,scores_json) VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE primary_personality=VALUES(primary_personality),secondary_personality=VALUES(secondary_personality),answers_json=VALUES(answers_json),scores_json=VALUES(scores_json),completed_at=CURRENT_TIMESTAMP(3)');
         $stmt->execute([$row['result_id'],$row['attempt_id'],$row['uid'],$row['primary_personality'],$row['secondary_personality'],json_encode($row['answers'] ?? [],JSON_UNESCAPED_UNICODE),json_encode($row['scores'] ?? [],JSON_UNESCAPED_UNICODE)]);
         $pdo->commit();
@@ -69,11 +81,11 @@ function dbPersonalitySample(string $key): ?array
 function dbFindOwnedResult(string $attemptId, string $uid): ?array
 {
     $pdo = dbConnection(); if (!$pdo) return null;
-    $stmt = $pdo->prepare('SELECT attempt_id,uid,answers_json,scores_json,primary_personality,secondary_personality FROM test_results WHERE attempt_id=? AND uid=? LIMIT 1');
+    $stmt = $pdo->prepare('SELECT r.attempt_id,r.uid,r.answers_json,r.scores_json,r.primary_personality,r.secondary_personality,a.source,a.campaign,a.school_id,a.creator_id,a.referrer_id,a.share_id FROM test_results r JOIN test_attempts a ON a.attempt_id=r.attempt_id WHERE r.attempt_id=? AND r.uid=? LIMIT 1');
     $stmt->execute([$attemptId,$uid]);
     $row = $stmt->fetch();
     if (!$row) return null;
     $answers = json_decode((string)$row['answers_json'],true);
     $scores = json_decode((string)$row['scores_json'],true);
-    return ['event'=>'test_result','attempt_id'=>$row['attempt_id'],'uid'=>$row['uid'],'answers'=>is_array($answers)?$answers:[],'scores'=>is_array($scores)?$scores:[],'primary_personality'=>$row['primary_personality'],'secondary_personality'=>$row['secondary_personality']];
+    return ['event'=>'test_result','attempt_id'=>$row['attempt_id'],'uid'=>$row['uid'],'answers'=>is_array($answers)?$answers:[],'scores'=>is_array($scores)?$scores:[],'primary_personality'=>$row['primary_personality'],'secondary_personality'=>$row['secondary_personality'],'source'=>$row['source'],'campaign'=>$row['campaign'],'school_id'=>$row['school_id'],'creator_id'=>$row['creator_id'],'referrer_id'=>$row['referrer_id'],'share_id'=>$row['share_id']];
 }
