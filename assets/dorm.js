@@ -1,4 +1,4 @@
-const dormState={inviteCode:(new URLSearchParams(location.search).get('dorm')||'').toUpperCase(),current:null,pollTimer:null};
+const dormState={inviteCode:(new URLSearchParams(location.search).get('dorm')||'').toUpperCase(),current:null,pollTimer:null,lastJoinedAttempt:''};
 
 function dormInit(){
   if($('createDormBtn'))$('createDormBtn').onclick=createDorm;
@@ -20,6 +20,14 @@ function dormInit(){
       if($('dormInviteProgress'))$('dormInviteProgress').textContent=`当前 ${d.member_count}/4 已完成，完成测试后你会自动加入。`;
     }).catch(()=>{});
   }
+
+  setInterval(()=>{
+    if(!dormState.inviteCode||!state.result)return;
+    const attempt=String(state.result.attempt_id||state.attemptId||'');
+    if(!attempt||attempt===dormState.lastJoinedAttempt)return;
+    dormState.lastJoinedAttempt=attempt;
+    joinInvitedDorm().catch(()=>{dormState.lastJoinedAttempt=''});
+  },500);
 }
 
 async function createDorm(){
@@ -52,7 +60,7 @@ async function joinInvitedDorm(){
     if(box){box.innerHTML=`<b>已加入 ${escapeDormHtml(d.dorm.name)}</b><br>${d.dorm.member_count}/4 位已完成。${d.dorm.status==='COMPLETE'?'宿舍报告已解锁。':'还差 '+(4-d.dorm.member_count)+' 位室友。'}`}
     if($('viewDormBtn'))$('viewDormBtn').hidden=false;
     toast(d.dorm.status==='COMPLETE'?'4/4 完成，宿舍报告已解锁':'已加入宿舍挑战');
-  }catch(e){if(box){box.hidden=false;box.textContent=`加入宿舍失败：${e.message}`}}
+  }catch(e){if(box){box.hidden=false;box.textContent=`加入宿舍失败：${e.message}`}throw e}
 }
 
 async function openDorm(code){
