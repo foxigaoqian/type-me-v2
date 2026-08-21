@@ -24,6 +24,8 @@ Landing
 v2-development
 ```
 
+Vercel 项目与 GitHub 仓库连接后，`v2-development` 的后续提交应自动触发 Preview Deployment；`main` 仍保持为正式基线分支。
+
 PR #2 保持 Draft。正式验收前不要把 Preview 当生产站。
 
 ## 2. Vercel 运行方式
