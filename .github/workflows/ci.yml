@@ -57,6 +57,7 @@ jobs:
           test -s Dockerfile.vercel
           test -s Caddyfile
           test -s .dockerignore
+          test -s vercel.json
           grep -q 'PORT' Caddyfile
           grep -q 'api/config.php' Caddyfile
 
@@ -95,7 +96,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo_mysql
+          extensions: pdo_mysql, mbstring
           coverage: none
 
       - name: Install MySQL client
@@ -109,8 +110,11 @@ jobs:
           set -euo pipefail
           mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/001_init.sql
           mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/002_seed_personality_products.sql
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/003_dorm_mvp.sql
           count=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e 'SELECT COUNT(*) FROM skus')
           test "$count" = "96"
+          dorm_tables=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='type_me_test' AND table_name IN ('dorms','dorm_members')")
+          test "$dorm_tables" = "2"
 
       - name: Run transactional inventory smoke test
         env:
@@ -118,6 +122,13 @@ jobs:
           DB_USER: root
           DB_PASS: roottest
         run: php tests/inventory_smoke.php
+
+      - name: Run four-member dorm MVP smoke test
+        env:
+          DB_DSN: mysql:host=127.0.0.1;port=3306;dbname=type_me_test;charset=utf8mb4
+          DB_USER: root
+          DB_PASS: roottest
+        run: php tests/dorm_smoke.php
 
   container-smoke:
     needs: validate
