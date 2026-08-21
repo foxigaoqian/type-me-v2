@@ -13,7 +13,7 @@
     .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:16px;box-shadow:3px 3px 0 #111}
     .k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:20px 0}.section h2{font-size:21px;margin:0 0 10px}
     .table-wrap{overflow:auto;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}.dorm-section{background:#111;color:#fff;padding:16px;border-radius:18px}.dorm-section h2{color:var(--accent)}.dorm-section .card{background:#1d1d1f;border-color:#f3ff38;box-shadow:3px 3px 0 #f3ff38}.dorm-section .k{color:#aaa}.dorm-section .v{color:#fff}
     @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}}
   </style>
 </head>
@@ -29,6 +29,7 @@
     <div class="section"><h2>测试漏斗</h2><div class="grid" id="testCards"></div><div class="table-wrap"><table><thead><tr><th>题目</th><th>到达</th><th>退出</th><th>退出率</th></tr></thead><tbody id="questionRows"></tbody></table></div></div>
     <div class="section"><h2>人格分布</h2><div class="table-wrap"><table><thead><tr><th>TYPE</th><th>人格</th><th>人数</th><th>占比</th></tr></thead><tbody id="personalityRows"></tbody></table></div></div>
     <div class="section"><h2>分享裂变</h2><div class="grid" id="viralCards"></div></div>
+    <div class="section dorm-section"><h2>宿舍人格挑战</h2><div class="muted" style="color:#aaa">核心裂变漏斗 · 创建宿舍 → 拉3位室友 → 4/4 → 门牌分享</div><div class="grid" id="dormCards"></div><div class="grid" id="dormQualityCards"></div></div>
     <div class="section"><h2>商品漏斗</h2><div class="grid" id="productCards"></div></div>
     <div class="section"><h2>销售</h2><div class="grid" id="salesCards"></div></div>
     <div class="section"><h2>人格商业价值</h2><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div>
@@ -66,6 +67,9 @@ function render(d){
   $('personalityRows').innerHTML=(pd.items||[]).map(x=>`<tr><td>${esc(x.type)}</td><td><b>${esc(x.name)}</b></td><td>${num(x.count)}</td><td>${num(pd.total)>=100?esc(pct(x.percent)):'<span class="pill">样本积累中</span>'}</td></tr>`).join('');
   const v=d.viral||{};
   $('viralCards').innerHTML=[['Result Views',num(v.result_views)],['Share Rate',pct(v.share_rate)],['Share Open Rate',pct(v.share_open_rate)],['K-factor',num(v.k_factor)]].map(x=>card(...x)).join('');
+  const dorm=d.dorm_funnel||{};
+  $('dormCards').innerHTML=[['宿舍创建',num(dorm.dorm_creates)],['室友加入次数',num(dorm.dorm_joins)],['4/4完成宿舍',num(dorm.dorm_completes)],['创建→4/4',pct(dorm.create_to_complete_rate)]].map(x=>card(...x)).join('');
+  $('dormQualityCards').innerHTML=[['宿舍邀请落地',num(dorm.invite_views)],['平均完成成员/宿舍',num(dorm.avg_completed_members_per_created_dorm).toFixed(2)],['门牌生成',num(dorm.doorplate_generates)],['4/4→门牌',pct(dorm.complete_to_doorplate_rate)],['宿舍分享',num(dorm.dorm_shares)],['门牌保存',num(dorm.doorplate_saves)],['独立加入室友',num(dorm.unique_join_users)],['宿舍页面浏览',num(dorm.dorm_views)]].map(x=>card(...x)).join('');
   const p=d.product_funnel||{};
   $('productCards').innerHTML=[['Result → Product',pct(p.result_to_product_ctr)],['Product → Add Cart',pct(p.product_to_add_cart)],['Product → Checkout',pct(p.product_to_checkout)],['Product → Paid',pct(p.product_to_paid)]].map(x=>card(...x)).join('');
   const s=d.sales||{};
