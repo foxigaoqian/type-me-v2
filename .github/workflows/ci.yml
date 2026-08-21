@@ -140,7 +140,7 @@ jobs:
       - name: Build Vercel FrankenPHP image
         run: docker build -f Dockerfile.vercel -t type-me-v2-vercel .
 
-      - name: Boot preview container and verify health
+      - name: Boot preview container and verify health + dorm API
         shell: bash
         run: |
           set -euo pipefail
@@ -177,3 +177,36 @@ jobs:
 
           status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/config.php)
           test "$status" = "404"
+
+          curl --fail --silent \
+            -H 'Content-Type: application/json' \
+            -d '{"attempt_id":"preview-a1","primary_personality":"periodic","secondary_personality":"awake","name":"CI Dorm"}' \
+            http://127.0.0.1:3000/api/dorm/create.php > /tmp/dorm-create.json
+
+          code=$(python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/dorm-create.json',encoding='utf-8'))
+          assert d['code']==0, d
+          assert d['dorm']['member_count']==1, d
+          assert d['dorm']['status']=='OPEN', d
+          print(d['dorm']['invite_code'])
+          PY
+          )
+
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a2\",\"primary_personality\":\"night\",\"secondary_personality\":\"zuiying\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-2.json
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a3\",\"primary_personality\":\"crazy\",\"secondary_personality\":\"suiyuan\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-3.json
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a4\",\"primary_personality\":\"boundary\",\"secondary_personality\":\"rebellious\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-4.json
+          curl --fail --silent "http://127.0.0.1:3000/api/dorm/status.php?code=$code" >/tmp/dorm-status.json
+
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/dorm-status.json',encoding='utf-8'))
+          assert d['code']==0, d
+          dorm=d['dorm']
+          assert dorm['member_count']==4, dorm
+          assert dorm['status']=='COMPLETE', dorm
+          assert dorm['report']['version']=='dorm-report-v1', dorm
+          assert len(dorm['report']['metrics'])==4, dorm
+          assert len(dorm['report']['roles'])==4, dorm
+          print('Preview dorm HTTP smoke passed:', dorm['invite_code'])
+          PY
