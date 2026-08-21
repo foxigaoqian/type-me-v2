@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/lib/analytics.php';
 require_once dirname(__DIR__) . '/lib/personality.php';
 requireAdmin();
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') jsonResponse(['code'=>-1,'message'=>'Method Not Allowed'],405);
+header('Cache-Control: no-store, max-age=0');
 
 $events = readNdjson(analyticsStoragePath('events.ndjson'));
 $results = readNdjson(analyticsStoragePath('test-results.ndjson'));
@@ -17,6 +18,7 @@ function since(array $rows, int $seconds): array { global $now; return array_val
 function countEvent(array $events, string $name): int { return count(array_filter($events, fn($e)=>($e['event_name']??'')===$name)); }
 function uniqueEventUsers(array $events, string $name): int { $u=[]; foreach($events as $e) if(($e['event_name']??'')===$name) $u[$e['anonymous_user_id']??$e['session_id']??uniqid('',true)]=1; return count($u); }
 function rate(int $a,int $b): float { return $a>0?round($b/$a*100,1):0.0; }
+function uniqueDormEventCount(array $events,string $name): int { $d=[]; foreach($events as $e){if(($e['event_name']??'')!==$name)continue;$id=(string)($e['dorm_id']??$e['dorm_code']??'');if($id!=='')$d[$id]=1;}return count($d); }
 
 $todayStart = strtotime(date('Y-m-d 00:00:00'));
 $yesterdayStart = $todayStart-86400;
@@ -62,6 +64,18 @@ usort($personalityDistribution,fn($a,$b)=>$b['count']<=>$a['count']);
 $resultViews=countEvent($events30,'result_view');$shareClicks=countEvent($events30,'share_click');$shareOpens=countEvent($events30,'share_open');$viralStarts=countEvent($events30,'viral_test_start');$viralCompletes=countEvent($events30,'viral_test_complete');
 $productViews=countEvent($events30,'product_view');$sizeSelects=countEvent($events30,'size_select');$addCarts=countEvent($events30,'add_cart');$checkouts=countEvent($events30,'checkout_start');$paidEvents=countEvent($events30,'payment_success');
 
+// 宿舍 MVP 漏斗：以独立 dorm_id 为主，避免同一宿舍重复打开/刷新造成虚高。
+$dormInviteViews=countEvent($events30,'dorm_invite_view');
+$dormCreates=uniqueDormEventCount($events30,'dorm_create');
+$dormJoins=countEvent($events30,'dorm_join');
+$dormCompletes=uniqueDormEventCount($events30,'dorm_complete');
+$dormViews=countEvent($events30,'dorm_view');
+$dormShares=countEvent($events30,'dorm_share');
+$dormDoorplates=uniqueDormEventCount($events30,'dorm_doorplate_generate');
+$dormDoorplateSaves=countEvent($events30,'dorm_doorplate_save');
+$dormJoinUsers=uniqueEventUsers($events30,'dorm_join');
+$dormCompletedMembers=$dormCreates + $dormJoins;
+
 $paidOrders=array_values(array_filter($orders,fn($o)=>in_array((string)($o['status']??''),['PAID','SUCCESS'],true)));
 $refundOrders=array_values(array_filter($orders,fn($o)=>in_array((string)($o['status']??''),['REFUND_REQUESTED','REFUNDED','PROCESSING'],true)));
 $orderInWindow=function(array $orders,int $seconds)use($now):array{return array_values(array_filter($orders,fn($o)=>eventTs($o)>=$now-$seconds));};
@@ -85,6 +99,20 @@ jsonResponse([
  'test_funnel'=>['landing_uv'=>$landing30,'test_start'=>$start30,'test_complete'=>$complete30,'landing_to_start'=>rate($landing30,$start30),'start_to_complete'=>rate($start30,$complete30),'average_test_duration_seconds'=>$avgDuration,'questions'=>$questionDrop],
  'personality_distribution'=>['total'=>$totalResults,'items'=>$personalityDistribution],
  'viral'=>['result_views'=>$resultViews,'share_clicks'=>$shareClicks,'share_rate'=>rate($resultViews,$shareClicks),'share_opens'=>$shareOpens,'share_open_rate'=>rate($shareClicks,$shareOpens),'viral_test_start'=>$viralStarts,'viral_test_complete'=>$viralCompletes,'k_factor'=>$complete30>0?round($viralCompletes/$complete30,3):0],
+ 'dorm_funnel'=>[
+    'invite_views'=>$dormInviteViews,
+    'dorm_creates'=>$dormCreates,
+    'dorm_joins'=>$dormJoins,
+    'unique_join_users'=>$dormJoinUsers,
+    'dorm_views'=>$dormViews,
+    'dorm_completes'=>$dormCompletes,
+    'create_to_complete_rate'=>rate($dormCreates,$dormCompletes),
+    'avg_completed_members_per_created_dorm'=>$dormCreates>0?round($dormCompletedMembers/$dormCreates,2):0,
+    'dorm_shares'=>$dormShares,
+    'doorplate_generates'=>$dormDoorplates,
+    'doorplate_saves'=>$dormDoorplateSaves,
+    'complete_to_doorplate_rate'=>rate($dormCompletes,$dormDoorplates),
+ ],
  'product_funnel'=>['result_view'=>$resultViews,'product_view'=>$productViews,'size_select'=>$sizeSelects,'add_cart'=>$addCarts,'checkout'=>$checkouts,'paid'=>$paidEvents,'result_to_product_ctr'=>rate($resultViews,$productViews),'product_to_add_cart'=>rate($productViews,$addCarts),'product_to_checkout'=>rate($productViews,$checkouts),'product_to_paid'=>rate($productViews,$paidEvents)],
  'sales'=>['today_orders'=>count($todayOrders),'today_gmv_fen'=>$gmv($todayOrders),'gmv_7d_fen'=>$gmv($paid7),'gmv_30d_fen'=>$gmv($paid30),'paid_users_30d'=>count($paidUsers),'aov_fen'=>count($paid30)?round($gmv($paid30)/count($paid30)):0,'refund_count'=>count($refundOrders),'refund_rate'=>rate(count($orders),count($refundOrders)),'sku_sales'=>$skuSales],
  'personality_value'=>$personalityValue,
