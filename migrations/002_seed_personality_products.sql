@@ -16,6 +16,6 @@ INSERT INTO skus (sku_id, product_id, color, size, stock_on_hand, stock_reserved
 SELECT CONCAT(p.product_id,'-',c.color,'-',s.size), p.product_id, c.color, s.size, 0, 0, 1
 FROM products p
 CROSS JOIN (SELECT '黑' color UNION ALL SELECT '白' UNION ALL SELECT '灰') c
-CROSS JOIN (SELECT 'S' size UNION ALL SELECT 'M' UNION ALL SELECT 'L' UNION ALL SELECT 'XL') s
+CROSS JOIN (SELECT 'XS' size UNION ALL SELECT 'S' UNION ALL SELECT 'M' UNION ALL SELECT 'L' UNION ALL SELECT 'XL' UNION ALL SELECT 'XXL' UNION ALL SELECT '3XL' UNION ALL SELECT '4XL') s
 WHERE p.product_id LIKE 'tee-%'
 ON DUPLICATE KEY UPDATE active=VALUES(active);
