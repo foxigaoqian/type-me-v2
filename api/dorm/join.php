@@ -19,9 +19,15 @@ try {
     $beforeCount = count($before['members'] ?? []);
     $snapshot = dormJoin($code,$uid,$result);
     $payload = dormPublicPayload($snapshot,$uid);
+    $afterCount = (int)$payload['member_count'];
     try {
-        trackEvent('dorm_join',['dorm_id'=>$payload['dorm_id'],'dorm_code'=>$payload['invite_code'],'dorm_member_count'=>$payload['member_count']]);
-        if ($beforeCount < 4 && $payload['status'] === 'COMPLETE') trackEvent('dorm_complete',['dorm_id'=>$payload['dorm_id'],'dorm_code'=>$payload['invite_code'],'dorm_member_count'=>4]);
+        // 只有真正新增槽位时才记录 join，刷新/重复提交保持业务和统计双重幂等。
+        if ($afterCount > $beforeCount) {
+            trackEvent('dorm_join',['dorm_id'=>$payload['dorm_id'],'dorm_code'=>$payload['invite_code'],'dorm_member_count'=>$afterCount]);
+        }
+        if ($beforeCount < 4 && $afterCount === 4 && $payload['status'] === 'COMPLETE') {
+            trackEvent('dorm_complete',['dorm_id'=>$payload['dorm_id'],'dorm_code'=>$payload['invite_code'],'dorm_member_count'=>4]);
+        }
     } catch (Throwable $e) {}
     jsonResponse(['code'=>0,'dorm'=>$payload]);
 } catch (Throwable $e) {
