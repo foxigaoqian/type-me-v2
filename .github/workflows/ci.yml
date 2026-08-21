@@ -112,7 +112,7 @@ jobs:
           mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/002_seed_personality_products.sql
           mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/003_dorm_mvp.sql
           count=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e 'SELECT COUNT(*) FROM skus')
-          test "$count" = "96"
+          test "$count" = "192"
           dorm_tables=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='type_me_test' AND table_name IN ('dorms','dorm_members')")
           test "$dorm_tables" = "2"
 
