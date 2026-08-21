@@ -70,7 +70,8 @@ function trackEvent(string $eventName, array $payload = []): array
         'landing_view','test_start','question_view','question_answer','test_complete','result_view',
         'identity_card_generate','identity_card_save','share_click','share_open','viral_test_start',
         'viral_test_complete','product_view','color_select','size_select','add_cart','checkout_start',
-        'payment_success','refund'
+        'payment_success','refund','dorm_invite_view','dorm_create','dorm_join','dorm_complete',
+        'dorm_view','dorm_share','dorm_doorplate_generate','dorm_doorplate_save'
     ];
     if (!in_array($eventName, $allowed, true)) throw new InvalidArgumentException('Unsupported event_name');
 
@@ -93,7 +94,7 @@ function trackEvent(string $eventName, array $payload = []): array
         'sku_id' => cleanEventField($payload['sku_id'] ?? ''),
         'order_id' => cleanEventField($payload['order_id'] ?? ''),
     ];
-    foreach (['attempt_id','question_id','question_index','answer_index','color','size'] as $extra) {
+    foreach (['attempt_id','question_id','question_index','answer_index','color','size','dorm_id','dorm_code','dorm_member_count'] as $extra) {
         if (array_key_exists($extra, $payload)) $row[$extra] = $payload[$extra];
     }
 
