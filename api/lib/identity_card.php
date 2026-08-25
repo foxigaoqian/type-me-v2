@@ -79,6 +79,39 @@ function fetchQrImage(string $targetUrl)
     return $qr;
 }
 
+function identityCardVisual(array $primary)
+{
+    if (!function_exists('imagecreatefromwebp')) return null;
+    $key = (string)($primary['key'] ?? '');
+    $relative = (string)(loadV2Config()['media_config']['personalities'][$key]['main'] ?? '');
+    if ($relative === '') return null;
+    $root = realpath(dirname(__DIR__, 2));
+    $path = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . ltrim($relative, '/\\'));
+    if ($root === false || $path === false || !str_starts_with($path, $root . DIRECTORY_SEPARATOR) || !is_readable($path)) return null;
+    return @imagecreatefromwebp($path) ?: null;
+}
+
+function drawCoverImage($target, $source, int $x, int $y, int $width, int $height): void
+{
+    $sourceWidth = imagesx($source);
+    $sourceHeight = imagesy($source);
+    if ($sourceWidth < 1 || $sourceHeight < 1) return;
+    $targetRatio = $width / $height;
+    $sourceRatio = $sourceWidth / $sourceHeight;
+    if ($sourceRatio > $targetRatio) {
+        $cropHeight = $sourceHeight;
+        $cropWidth = (int)round($sourceHeight * $targetRatio);
+        $sourceX = (int)floor(($sourceWidth - $cropWidth) / 2);
+        $sourceY = 0;
+    } else {
+        $cropWidth = $sourceWidth;
+        $cropHeight = (int)round($sourceWidth / $targetRatio);
+        $sourceX = 0;
+        $sourceY = (int)floor(($sourceHeight - $cropHeight) / 2);
+    }
+    imagecopyresampled($target, $source, $x, $y, $sourceX, $sourceY, $width, $height, $cropWidth, $cropHeight);
+}
+
 function renderIdentityCard(array $primary, array $secondary, array $sample, string $shareUrl): array
 {
     if (!extension_loaded('gd') || !function_exists('imagettftext')) throw new RuntimeException('服务器缺少 GD/FreeType 扩展');
@@ -94,6 +127,13 @@ function renderIdentityCard(array $primary, array $secondary, array $sample, str
     [$ar,$ag,$ab] = hexRgb((string)($primary['accent'] ?? '#f3ff38'));
     $accent = imagecolorallocate($im, $ar, $ag, $ab);
     imagefilledrectangle($im, 0, 0, $w, $h, $bg);
+    $visual = identityCardVisual($primary);
+    if ($visual) {
+        drawCoverImage($im, $visual, 0, 0, $w, 690);
+        imagedestroy($visual);
+        $visualShade = imagecolorallocatealpha($im, 0, 0, 0, 42);
+        imagefilledrectangle($im, 0, 0, $w, 690, $visualShade);
+    }
     imagefilledrectangle($im, 0, 0, $w, 26, $accent);
 
     drawCardText($im,$font,'TYPE ME',42,70,105,$white);

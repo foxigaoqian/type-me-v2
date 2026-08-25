@@ -1,31 +1,32 @@
-/* Product visual adapter: uses real product.image when available, otherwise a clearly labeled concept mockup. */
+/* Product visual adapter: customer-supplied campaign visuals + explicit preview disclosure. */
 (function(){
   const baseRenderProduct=renderProduct;
-  const colorMap={'黑':'#171717','白':'#f7f5ef','灰':'#b9b9b5'};
+
   renderProduct=function(){
     baseRenderProduct();
-    const p=state.result.primary,product=state.products.products[p.key],photo=document.querySelector('.product-photo');
-    if(!photo)return;
-    if(product?.image){
-      photo.classList.add('has-real-image');
-      photo.innerHTML=`<img class="real-product-image" src="${product.image}" alt="${product.name||p.cn}" loading="lazy">`;
-      return;
-    }
-    photo.classList.remove('has-real-image');
-    const teeColor=colorMap[state.color]||'#f7f5ef';
-    const ink=state.color==='黑'?'#f7f5ef':'#111';
-    photo.innerHTML=`
-      <div class="mockup-stage" style="--tee:${teeColor};--tee-ink:${ink};--type-accent:${p.accent||'#f3ff38'}">
-        <div class="mockup-label">CONCEPT MOCKUP · PHOTO PENDING</div>
-        <div class="tee-shape" aria-hidden="true">
-          <div class="tee-neck"></div>
-          <div class="tee-print">
-            <span>${p.type}</span>
-            <strong>${p.cn}</strong>
-            <em>${p.en}</em>
-          </div>
-        </div>
-        <div class="mockup-foot">${state.color} / ${state.size} · 最终实物图以后直接替换</div>
-      </div>`;
+    const p=state.result.primary;
+    const product=state.products.products[p.key];
+    const media=state.media?.personalities?.[p.key]||{};
+    const photo=$('productPhoto');
+    const gallery=$('productGallery');
+    if(!photo||!gallery)return;
+
+    const items=[
+      {label:'主视觉',src:media.main||product?.image},
+      {label:'正面穿搭',src:media.front},
+      {label:'背面 / 版型',src:media.back},
+      {label:'校园场景',src:media.scene}
+    ].filter(item=>item.src);
+
+    const show=(index)=>{
+      const item=items[index]||items[0];
+      if(!item)return;
+      photo.innerHTML=`<img class="real-product-image" src="${assetUrl(item.src)}" alt="${p.type} ${p.cn}${item.label}" width="1200" height="1200"><span class="visual-badge">品牌视觉示意</span>`;
+      [...gallery.querySelectorAll('button')].forEach((button,i)=>button.classList.toggle('active',i===index));
+    };
+
+    gallery.innerHTML=items.map((item,index)=>`<button type="button" aria-label="查看${item.label}"><img src="${assetUrl(item.src)}" alt="" width="1200" height="1200" loading="lazy"><span>${item.label}</span></button>`).join('');
+    [...gallery.querySelectorAll('button')].forEach((button,index)=>button.onclick=()=>show(index));
+    show(0);
   };
 })();

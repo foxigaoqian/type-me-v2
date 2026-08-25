@@ -17,6 +17,9 @@ function enrichV2OrderItems(array $items): array
     $raw = file_get_contents(dirname(__DIR__, 2) . '/config/v2.json');
     $cfg = json_decode((string)$raw, true);
     $productCfg = is_array($cfg) ? ($cfg['product_config'] ?? []) : [];
+    if (($productCfg['sales_enabled'] ?? false) !== true) {
+        throw new RuntimeException((string)($productCfg['sales_status'] ?? '商品暂未开放购买'));
+    }
     $product = $productCfg['products'][$personality] ?? null;
     if (!is_array($product)) throw new InvalidArgumentException('人格商品不存在');
     if (!in_array($color, $productCfg['colors'] ?? [], true)) throw new InvalidArgumentException('无效颜色');

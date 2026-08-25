@@ -70,11 +70,18 @@ php scripts/migrate-private-storage.php --force
 ```bash
 mysql -u YOUR_DB_USER -p type_me < migrations/001_init.sql
 mysql -u YOUR_DB_USER -p type_me < migrations/002_seed_personality_products.sql
+mysql -u YOUR_DB_USER -p type_me < migrations/003_dorm_mvp.sql
 ```
 
-`002_seed_personality_products.sql` 会建立 8 人格 × 3 颜色 × 4 尺码的 96 个 SKU，但所有 `stock_on_hand` 初始值都是 **0**。
+`002_seed_personality_products.sql` 会建立 8 人格 × 3 颜色 × 8 尺码的 192 个理论 SKU，但所有 `stock_on_hand` 初始值都是 **0**。
 
-上线前必须按真实库存填写 `skus.stock_on_hand`。不要为了测试购买流程而在生产数据库伪造库存。
+客户 2026-08-25 提供的库存已整理为 `migrations/004_apply_customer_inventory_20260825.sql`。只有在再次确认库存仍有效、数据库没有旧预留库存后才执行：
+
+```bash
+mysql -u YOUR_DB_USER -p type_me < migrations/004_apply_customer_inventory_20260825.sql
+```
+
+该迁移会写入 56 个实际可售 SKU 组合，并将其余理论组合设为 0 库存且停用。不要为了测试购买流程而在生产数据库伪造库存。
 
 检查：
 

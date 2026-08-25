@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#f3f0e9">
   <title>TYPE ME｜你是哪种大学生物种？</title>
   <meta name="description" content="12 道不太正经的问题，看看你的校园隐藏人格。">
-  <link rel="stylesheet" href="assets/styles.css?v=2">
-  <link rel="stylesheet" href="assets/product-mockup.css?v=1">
-  <link rel="stylesheet" href="assets/dorm.css?v=1">
+  <link rel="stylesheet" href="assets/styles.css?v=3">
+  <link rel="stylesheet" href="assets/product-mockup.css?v=2">
+  <link rel="stylesheet" href="assets/dorm.css?v=2">
+  <link rel="stylesheet" href="assets/customer-media.css?v=1">
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 </head>
 <body>
@@ -22,6 +23,7 @@
       <div class="hero">
         <span class="eyebrow">CAMPUS PERSONALITY TEST</span>
         <h1>你是哪种<br>大学生物种？</h1>
+        <div class="hero-visual" id="homeVisual" aria-label="TYPE ME 校园人格穿搭视觉"></div>
         <p class="sub">12 道不太正经的问题<br>看看你的校园隐藏人格。</p>
         <div class="meta-row"><span class="meta-chip">约 60 秒</span><span class="meta-chip">免费</span><span class="meta-chip">不用登录</span></div>
         <div id="dormInviteBanner" class="dorm-invite-banner" hidden>
@@ -58,12 +60,15 @@
 
     <section id="resultPage" class="page">
       <div id="resultHero" class="result-hero">
-        <div class="type-number" id="resultType"></div>
-        <h1 class="result-name" id="resultName"></h1>
-        <div class="result-en" id="resultEn"></div>
-        <p class="result-core" id="resultCore"></p>
+        <div class="result-visual-frame"><img id="resultVisual" src="" alt="" width="1200" height="1200"></div>
+        <div class="result-hero-copy">
+          <div class="type-number" id="resultType"></div>
+          <h1 class="result-name" id="resultName"></h1>
+          <div class="result-en" id="resultEn"></div>
+          <p class="result-core" id="resultCore"></p>
+        </div>
       </div>
-      <div class="result-section"><h3>你大概是这样</h3><p id="resultDescription"></p></div>
+      <div class="result-section"><h3>你大概是这样</h3><p id="resultDescription"></p><div class="result-gallery" id="resultGallery"></div><p class="visual-note" id="resultVisualNote"></p></div>
       <div class="result-section"><h3>人格指标</h3><div id="metrics"></div><p class="notice">娱乐测试结果；指标由本次答题权重换算，不是心理测量或医学结论。</p></div>
       <div class="result-section"><h3>你的隐藏人格</h3><div class="hidden-personality"><div class="hidden-badge" id="secondaryType"></div><div><div style="font-weight:1000;font-size:20px" id="secondaryName"></div><div class="notice" id="secondaryCore"></div></div></div></div>
       <div class="result-section"><h3>校园生存技能</h3><p id="skillText"></p></div>
@@ -72,6 +77,7 @@
       <div class="result-section">
         <h3>人格身份证</h3>
         <div class="share-card-preview" id="identityPreview">
+          <img class="card-visual" id="cardVisual" src="" alt="" width="1200" height="1200">
           <small>TYPE ME · CAMPUS SPECIES</small>
           <div><div id="cardType" style="font-weight:900"></div><h4 id="cardName"></h4><div id="cardEn" style="font-weight:900;color:#bbb"></div></div>
           <div><div id="cardCore" style="font-size:20px;font-weight:900;line-height:1.35"></div><div style="margin-top:20px;font-size:12px;color:#aaa">测测你是什么校园物种</div></div>
@@ -82,6 +88,7 @@
 
       <div class="section dorm-entry" id="dormChallengeBlock">
         <div class="dorm-entry-card">
+          <img id="dormEntryVisual" class="dorm-entry-visual" src="assets/media/type01/scene.webp" alt="大学宿舍同学一起参与人格挑战" width="1200" height="1200" loading="lazy">
           <div class="dorm-kicker">DORM PERSONALITY CHALLENGE</div>
           <h3>测测你们宿舍有多离谱</h3>
           <p>创建你的宿舍，邀请 3 个室友分别完成测试。4/4 后自动解锁「宿舍精神状态报告」和可分享的宿舍人格门牌。</p>
@@ -95,17 +102,22 @@
       <div class="section">
         <h2>把你的 TYPE 穿出去</h2>
         <div class="product-box">
-          <div class="product-photo"><div>CONCEPT MOCKUP<br><span style="font-weight:600;font-size:12px">真实商品图到位后直接替换</span></div></div>
+          <div class="product-photo" id="productPhoto"></div>
+          <div class="product-gallery" id="productGallery"></div>
           <div class="product-copy">
-            <div class="debug-tag">真实商品参数已录入 · 图片仍为概念样衣</div>
+            <div class="debug-tag">客户视觉素材已更新 · 当前为商品预览</div>
             <h3 id="productName" style="font-size:25px;margin:14px 0 4px"></h3>
             <div class="price"><strong>¥129</strong><del>日常价 ¥139</del></div>
             <div class="selector"><div class="selector-label">颜色</div><div class="chips" id="colorChips"></div></div>
             <div class="selector"><div class="selector-label">尺码</div><div class="chips" id="sizeChips"></div></div>
+            <div class="inventory-line" id="productInventory"></div>
             <div class="product-specs" id="productSpecs"></div>
             <details class="size-guide"><summary>查看尺码表（CM）</summary><div class="size-guide-scroll"><table><thead><tr><th>尺码</th><th>胸围</th><th>衣长</th><th>肩宽</th></tr></thead><tbody id="sizeGuideRows"></tbody></table></div></details>
             <div class="model-ref" id="modelRef"></div>
-            <button class="primary-btn" id="buyBtn">穿上我的 TYPE · ¥129</button>
+            <details class="care-guide"><summary>洗涤与护理</summary><ul id="careList"></ul></details>
+            <div class="detail-photo-grid" id="productDetailPhotos"></div>
+            <div class="fulfillment-note" id="fulfillmentNote"></div>
+            <button class="primary-btn" id="buyBtn" disabled>商品预览中 · 暂未开放购买</button>
             <p class="notice" id="productPendingNote"></p>
           </div>
         </div>
@@ -149,10 +161,10 @@
 <div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">支付沿用当前微信 JSAPI / Native 接口，不在 V2 重写支付底座。</p></div></div>
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast"></div>
-<script src="assets/app.js?v=2"></script>
+<script src="assets/app.js?v=3"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
-<script src="assets/product-mockup.js?v=1"></script>
+<script src="assets/product-mockup.js?v=2"></script>
 <script src="assets/card-ui.js?v=2"></script>
-<script src="assets/dorm.js?v=1"></script>
+<script src="assets/dorm.js?v=2"></script>
 </body>
 </html>
