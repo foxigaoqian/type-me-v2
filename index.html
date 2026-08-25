@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="assets/product-mockup.css?v=3">
   <link rel="stylesheet" href="assets/dorm.css?v=2">
   <link rel="stylesheet" href="assets/customer-media.css?v=2">
-  <link rel="stylesheet" href="assets/editorial-v4.css?v=2">
+  <link rel="stylesheet" href="assets/editorial-v4.css?v=3">
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 </head>
 <body>
@@ -108,9 +108,8 @@
         <div class="section-heading compact"><div><span class="section-kicker">CAMPUS IDENTITY CARD</span><h2>领取人格身份证</h2></div></div>
         <div class="identity-layout"><div class="share-card-preview" id="identityPreview">
           <img class="card-visual" id="cardVisual" src="" alt="" width="1200" height="1200">
-          <small>TYPE ME · CAMPUS SPECIES</small>
-          <div><div id="cardType" style="font-weight:900"></div><h4 id="cardName"></h4><div id="cardEn" style="font-weight:900;color:#bbb"></div></div>
-          <div><div id="cardCore" style="font-size:20px;font-weight:900;line-height:1.35"></div><div style="margin-top:20px;font-size:12px;color:#aaa">测测你是什么校园物种</div></div>
+          <div class="card-preview-top"><small>TYPE ME · CAMPUS SPECIES</small><div id="cardType"></div></div>
+          <div class="card-preview-copy"><h4 id="cardName"></h4><div id="cardEn"></div><div id="cardCore"></div></div>
         </div><div class="identity-copy"><span class="identity-index">TYPE ID / 01</span><h3>生成你的专属校园身份</h3><p>保存 1080×1920 人格卡，分享给好友看看他们是什么 TYPE。</p><div class="identity-actions"><button class="primary-btn" id="generateCardBtn">生成我的人格卡 →</button></div><p class="notice" id="cardStatus">二维码会绑定本次分享归因。</p></div></div>
       </div>
 
@@ -129,7 +128,7 @@
 
       <div class="product-teaser-section">
         <div class="section-heading compact"><div><span class="section-kicker">WEAR YOUR TYPE</span><h2>你的 TYPE ME</h2></div></div>
-        <div class="product-teaser"><img id="productTeaserVisual" src="" alt="" width="800" height="800" loading="lazy"><div><h3 id="productTeaserName"></h3><strong>¥129</strong><p>人格认证价 · 商品暂为预览</p><button class="secondary-btn" id="viewProductBtn">查看 T 恤详情 →</button></div></div>
+        <div class="product-teaser"><div class="product-teaser-media"><img id="productTeaserVisual" src="" alt="" width="800" height="1000" loading="lazy"></div><div class="product-teaser-copy"><h3 id="productTeaserName"></h3><strong>¥129</strong><p>人格认证价 · 商品暂为预览</p><button class="secondary-btn" id="viewProductBtn">查看 T 恤详情 →</button></div></div>
       </div>
     </section>
 
