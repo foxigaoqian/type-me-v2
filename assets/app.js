@@ -20,6 +20,8 @@ function bind(){
   $('productBackBtn').onclick=()=>showPage('result');
   $('generateCardBtn').onclick=generateIdentityCard;
   $('shareBtn').onclick=shareResult;
+  $('resultDormBranch').onclick=openDormEntry;
+  $('resultProductBranch').onclick=()=>$('viewProductBtn').click();
   $('buyBtn').onclick=openCheckout;
   $('closeCheckoutBtn').onclick=()=>$('checkoutModal').classList.remove('open');
   $('payBtn').onclick=checkout;
@@ -48,7 +50,7 @@ function renderResult(){
   $('resultType').textContent=p.type;$('resultName').textContent=p.cn;$('resultEn').textContent=p.en;$('resultCore').textContent=p.core;$('resultDescription').textContent=p.description;
   $('resultVisual').src=assetUrl(media.main);$('resultVisual').alt=media.alt||`${p.type} ${p.cn}校园穿搭视觉`;
   $('cardVisual').src=assetUrl(media.main);
-  $('resultGallery').innerHTML=[['日常穿搭',media.front],['校园场景',media.scene]].filter(x=>x[1]).map(([label,src])=>`<figure><img src="${assetUrl(src)}" alt="${p.type} ${p.cn}${label}" width="1200" height="1500" loading="lazy"><figcaption>${label}</figcaption></figure>`).join('');
+  $('resultGallery').innerHTML=[['日常穿搭',media.front,'story-lead'],['背面设计',media.back,'story-support'],['校园场景',media.scene,'story-support']].filter(x=>x[1]).map(([label,src,kind])=>`<figure class="${kind}"><img src="${assetUrl(src)}" alt="${p.type} ${p.cn}${label}" width="1200" height="1500" loading="lazy"><figcaption>${label}</figcaption></figure>`).join('');
   $('resultVisualNote').textContent=state.media?.visual_disclaimer||'';
   $('metrics').innerHTML=(p.metrics||[]).map(m=>`<div class="metric"><div class="metric-top"><span>${m.name}</span><span>${m.value}%</span></div><div class="metric-bar"><span style="width:${m.value}%"></span></div></div>`).join('');
   $('secondaryType').textContent=s.type;$('secondaryName').textContent=s.cn;$('secondaryCore').textContent=s.core;$('skillText').textContent=p.skill;$('weaknessText').textContent=p.weakness;

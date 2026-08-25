@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="assets/product-mockup.css?v=3">
   <link rel="stylesheet" href="assets/dorm.css?v=2">
   <link rel="stylesheet" href="assets/customer-media.css?v=2">
-  <link rel="stylesheet" href="assets/editorial-v4.css?v=1">
+  <link rel="stylesheet" href="assets/editorial-v4.css?v=2">
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 </head>
 <body>
@@ -76,23 +76,30 @@
     </section>
 
     <section id="resultPage" class="page">
-      <div class="result-page-kicker">你的校园人格是</div>
       <div id="resultHero" class="result-hero">
         <div class="result-visual-frame"><img id="resultVisual" src="" alt="" width="1200" height="1200"></div>
         <div class="result-hero-copy">
+          <span class="result-page-kicker">YOUR CAMPUS SPECIES</span>
           <div class="type-number" id="resultType"></div>
           <h1 class="result-name" id="resultName"></h1>
           <div class="result-en" id="resultEn"></div>
         </div>
       </div>
-      <div class="result-intro"><h2 id="resultCore"></h2><p id="resultDescription"></p></div>
-      <div class="metrics-section"><div class="section-heading compact"><div><span class="section-kicker">PERSONALITY ENERGY</span><h2>人格能量图</h2></div></div><div id="metrics"></div><p class="notice">娱乐测试结果，不是心理测量或医学结论。</p></div>
+      <div class="result-intro">
+        <span class="section-kicker">PERSONALITY PROFILE</span>
+        <h2 id="resultCore"></h2>
+        <p id="resultDescription"></p>
+        <div class="result-secondary">
+          <span>隐藏人格 / SECONDARY TYPE</span>
+          <div class="hidden-personality"><div class="hidden-badge" id="secondaryType"></div><div><strong id="secondaryName"></strong><p id="secondaryCore"></p></div></div>
+        </div>
+      </div>
+      <div class="metrics-section"><div class="section-heading compact"><div><span class="section-kicker">PERSONALITY SIGNALS</span><h2>你的人格信号</h2></div></div><div id="metrics" class="metrics-grid"></div><p class="notice">娱乐测试结果，不是心理测量或医学结论。</p></div>
       <div class="other-side-section">
-        <div class="section-heading compact inverse"><div><span class="section-kicker">THE OTHER SIDE</span><h2>你的另一面</h2></div></div>
+        <div class="section-heading compact inverse"><div><span class="section-kicker">SURVIVAL GUIDE</span><h2>你的校园生存指南</h2></div></div>
         <div class="other-side-grid">
-          <div class="other-side-item"><span>隐藏属性</span><div class="hidden-personality"><div class="hidden-badge" id="secondaryType"></div><div><strong id="secondaryName"></strong><p id="secondaryCore"></p></div></div></div>
-          <div class="other-side-item"><span>高光技能</span><p id="skillText"></p></div>
-          <div class="other-side-item"><span>容易踩坑</span><p id="weaknessText"></p></div>
+          <article class="other-side-item skill-card"><span>HIGH-LIGHT SKILL</span><h3>高光技能</h3><p id="skillText"></p></article>
+          <article class="other-side-item weakness-card"><span>FATAL WEAKNESS</span><h3>容易踩坑</h3><p id="weaknessText"></p></article>
         </div>
       </div>
       <div class="story-section"><div class="section-heading compact"><div><span class="section-kicker">YOUR CAMPUS STORY</span><h2>人格故事</h2></div></div><div class="result-gallery" id="resultGallery"></div><p class="visual-note" id="resultVisualNote"></p></div>
@@ -104,8 +111,14 @@
           <small>TYPE ME · CAMPUS SPECIES</small>
           <div><div id="cardType" style="font-weight:900"></div><h4 id="cardName"></h4><div id="cardEn" style="font-weight:900;color:#bbb"></div></div>
           <div><div id="cardCore" style="font-size:20px;font-weight:900;line-height:1.35"></div><div style="margin-top:20px;font-size:12px;color:#aaa">测测你是什么校园物种</div></div>
-        </div><div class="identity-copy"><h3>生成你的专属校园身份</h3><p>保存 1080×1920 人格卡，分享给好友看看他们是什么 TYPE。</p><div class="identity-actions"><button class="primary-btn" id="generateCardBtn">生成我的人格卡 →</button><button class="secondary-btn" id="shareBtn">分享给朋友</button></div><p class="notice" id="cardStatus">二维码会绑定本次分享归因。</p></div></div>
+        </div><div class="identity-copy"><span class="identity-index">TYPE ID / 01</span><h3>生成你的专属校园身份</h3><p>保存 1080×1920 人格卡，分享给好友看看他们是什么 TYPE。</p><div class="identity-actions"><button class="primary-btn" id="generateCardBtn">生成我的人格卡 →</button></div><p class="notice" id="cardStatus">二维码会绑定本次分享归因。</p></div></div>
       </div>
+
+      <nav class="result-branch-grid" aria-label="测试结果下一步">
+        <button class="result-branch" id="shareBtn" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 12l8-8m0 0H9m7 0v7M5 8v11h11v-5"/></svg></span><strong>分享给朋友</strong><small>让朋友继续测试</small></button>
+        <button class="result-branch" id="resultDormBranch" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10M9 20v-6h6v6"/></svg></span><strong>宿舍挑战</strong><small>邀请 3 位室友</small></button>
+        <button class="result-branch" id="resultProductBranch" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 5 4-2 4 2 4 2-2 4-2-1v11H8V10l-2 1-2-4 4-2Z"/></svg></span><strong>看我的 T 恤</strong><small>颜色与尺码</small></button>
+      </nav>
 
       <div class="section dorm-entry result-dorm-entry" id="dormChallengeBlock">
         <div class="dorm-entry-card">
@@ -183,7 +196,7 @@
 <div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">支付沿用当前微信 JSAPI / Native 接口，不在 V2 重写支付底座。</p></div></div>
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/app.js?v=4"></script>
+<script src="assets/app.js?v=5"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
 <script src="assets/product-mockup.js?v=2"></script>
 <script src="assets/card-ui.js?v=2"></script>
