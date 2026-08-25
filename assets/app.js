@@ -64,8 +64,9 @@ function renderProduct(){
   const colors=product?.available_colors||state.products.colors||[];if(!colors.includes(state.color))state.color=colors[0]||'';
   const sizes=(state.products.sizes||[]).filter(size=>Number(product?.stock_by_size?.[size]||0)>0);if(!sizes.includes(state.size))state.size=sizes[0]||'';
   $('productName').textContent=product?.name||`${p.type} · ${p.cn}人格 T 恤`;
-  $('colorChips').innerHTML=colors.map(c=>`<button class="chip ${c===state.color?'active':''}" data-v="${c}" aria-pressed="${c===state.color}">${c}</button>`).join('');
-  $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}">${labels[s]||s}<small>${product.stock_by_size[s]}件</small></button>`).join('');
+  const colorHex={'黑':'#111111','白':'#ffffff','灰':'#a9a9a9'};
+  $('colorChips').innerHTML=colors.map(c=>`<button class="chip color-chip ${c===state.color?'active':''}" data-v="${c}" aria-pressed="${c===state.color}"><span class="color-dot" style="--chip-color:${colorHex[c]||'#dddddd'}"></span><span>${c}</span></button>`).join('');
+  $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip size-chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}" aria-label="${labels[s]||s}，库存 ${product.stock_by_size[s]} 件">${labels[s]||s}</button>`).join('');
   $('productInventory').textContent=`当前批次：${colors.join(' / ')} · 合计 ${Number(product?.stock_total||0)} 件；库存已同步但暂不开放支付。`;
   const specs=[["面料",d.material],["克重",d.weight],["纱支",d.yarn_count],["版型",d.fit],["领口",d.collar],["印花",d.print_method],["缩水率",d.shrinkage_rate!=null?`${Math.round(Number(d.shrinkage_rate)*100)}%`:''],["抗起球",d.pilling],["色牢度",d.colorfastness],["透度",d.opacity]].filter(x=>x[1]);
   $('productSpecs').innerHTML=specs.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');

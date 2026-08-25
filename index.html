@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="assets/product-mockup.css?v=3">
   <link rel="stylesheet" href="assets/dorm.css?v=2">
   <link rel="stylesheet" href="assets/customer-media.css?v=2">
-  <link rel="stylesheet" href="assets/editorial-v4.css?v=3">
+  <link rel="stylesheet" href="assets/editorial-v4.css?v=4">
   <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
 </head>
 <body>
@@ -136,26 +136,28 @@
       <div class="product-page-head"><button class="back-btn" id="productBackBtn">← 返回人格结果</button><span class="section-kicker">TYPE ME PRODUCT</span><h1>把你的 TYPE 穿出去</h1></div>
       <div class="section product-detail-section">
         <div class="product-box">
-          <div class="product-photo" id="productPhoto"></div>
-          <div class="product-gallery" id="productGallery"></div>
+          <div class="product-media-panel">
+            <div class="product-photo" id="productPhoto"></div>
+            <div class="product-gallery" id="productGallery"></div>
+          </div>
           <div class="product-copy">
             <div class="debug-tag">客户视觉素材已更新 · 当前为商品预览</div>
-            <h3 id="productName" style="font-size:25px;margin:14px 0 4px"></h3>
-            <div class="price"><strong>¥129</strong><del>日常价 ¥139</del></div>
+            <div class="product-summary"><h2 id="productName"></h2><div class="price"><strong>¥129</strong><span>人格认证价</span><del>日常价 ¥139</del></div></div>
             <div class="selector"><div class="selector-label">颜色</div><div class="chips" id="colorChips"></div></div>
             <div class="selector"><div class="selector-label">尺码</div><div class="chips" id="sizeChips"></div></div>
+            <div class="product-benefits" aria-label="商品核心卖点"><div><strong>220g</strong><span>重磅棉</span></div><div><strong>100%</strong><span>纯棉面料</span></div><div><strong>BOXY</strong><span>宽松版型</span></div></div>
             <div class="inventory-line" id="productInventory"></div>
-            <div class="product-specs" id="productSpecs"></div>
-            <details class="size-guide"><summary>查看尺码表（CM）</summary><div class="size-guide-scroll"><table><thead><tr><th>尺码</th><th>胸围</th><th>衣长</th><th>肩宽</th></tr></thead><tbody id="sizeGuideRows"></tbody></table></div></details>
-            <div class="model-ref" id="modelRef"></div>
-            <details class="care-guide"><summary>洗涤与护理</summary><ul id="careList"></ul></details>
-            <div class="detail-photo-grid" id="productDetailPhotos"></div>
-            <div class="fulfillment-note" id="fulfillmentNote"></div>
-            <button class="primary-btn" id="buyBtn" disabled>商品预览中 · 暂未开放购买</button>
-            <p class="notice" id="productPendingNote"></p>
+            <div class="product-accordion-list">
+              <details class="product-accordion"><summary>商品参数</summary><div class="product-accordion-body"><div class="product-specs" id="productSpecs"></div></div></details>
+              <details class="product-accordion"><summary>尺码建议</summary><div class="product-accordion-body"><div class="size-guide-scroll"><table><thead><tr><th>尺码</th><th>胸围</th><th>衣长</th><th>肩宽</th></tr></thead><tbody id="sizeGuideRows"></tbody></table></div><div class="model-ref" id="modelRef"></div></div></details>
+              <details class="product-accordion"><summary>洗涤护理</summary><div class="product-accordion-body"><ul class="care-list" id="careList"></ul></div></details>
+              <details class="product-accordion"><summary>发货与售后</summary><div class="product-accordion-body"><div class="fulfillment-note" id="fulfillmentNote"></div></div></details>
+            </div>
           </div>
+          <div class="product-detail-story"><div class="section-heading compact"><div><span class="section-kicker">REAL PRODUCT DETAILS</span><h2>真实商品细节</h2></div></div><div class="detail-photo-grid" id="productDetailPhotos"></div><p class="notice" id="productPendingNote"></p></div>
         </div>
       </div>
+      <div class="product-sticky-bar" aria-label="商品购买栏"><div><small>人格认证价</small><strong>¥129</strong></div><button class="primary-btn" id="buyBtn" disabled>商品预览中 · 暂未开放购买</button></div>
     </section>
 
     <section id="dormPage" class="page">
@@ -195,7 +197,7 @@
 <div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">支付沿用当前微信 JSAPI / Native 接口，不在 V2 重写支付底座。</p></div></div>
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/app.js?v=5"></script>
+<script src="assets/app.js?v=6"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
 <script src="assets/product-mockup.js?v=2"></script>
 <script src="assets/card-ui.js?v=2"></script>
