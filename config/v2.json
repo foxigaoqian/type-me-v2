@@ -847,6 +847,7 @@
         "name": "TYPE 01 · 间歇卷王人格 T 恤",
         "personality": "periodic",
         "image": "assets/media/type01/front.webp",
+        "display_color": "白",
         "available_colors": ["白"],
         "stock_total": 18,
         "stock_by_size": {"XS": 2, "S": 3, "M": 3, "L": 3, "XL": 3, "XXL": 2, "3XL": 2}
@@ -856,6 +857,7 @@
         "name": "TYPE 02 · 随缘体人格 T 恤",
         "personality": "suiyuan",
         "image": "assets/media/type02/front.webp",
+        "display_color": "灰",
         "available_colors": ["黑"],
         "stock_total": 18,
         "stock_by_size": {"XS": 2, "S": 3, "M": 3, "L": 3, "XL": 3, "XXL": 2, "3XL": 2}
@@ -865,6 +867,7 @@
         "name": "TYPE 03 · 嘴硬体人格 T 恤",
         "personality": "zuiying",
         "image": "assets/media/type03/front.webp",
+        "display_color": "灰",
         "available_colors": ["白"],
         "stock_total": 55,
         "stock_by_size": {"XS": 5, "S": 10, "M": 10, "L": 10, "XL": 10, "XXL": 5, "3XL": 5}
@@ -874,6 +877,7 @@
         "name": "TYPE 04 · 夜行体人格 T 恤",
         "personality": "night",
         "image": "assets/media/type04/front.webp",
+        "display_color": "黑",
         "available_colors": ["黑"],
         "stock_total": 55,
         "stock_by_size": {"XS": 5, "S": 10, "M": 10, "L": 10, "XL": 10, "XXL": 5, "3XL": 5}
@@ -883,6 +887,7 @@
         "name": "TYPE 05 · 边界守卫者人格 T 恤",
         "personality": "boundary",
         "image": "assets/media/type05/front.webp",
+        "display_color": "白",
         "available_colors": ["灰"],
         "stock_total": 55,
         "stock_by_size": {"XS": 5, "S": 10, "M": 10, "L": 10, "XL": 10, "XXL": 5, "3XL": 5}
@@ -892,6 +897,7 @@
         "name": "TYPE 06 · 反骨体人格 T 恤",
         "personality": "rebellious",
         "image": "assets/media/type06/front.webp",
+        "display_color": "黑",
         "available_colors": ["灰"],
         "stock_total": 23,
         "stock_by_size": {"XS": 2, "S": 3, "M": 3, "L": 5, "XL": 5, "XXL": 3, "3XL": 2}
@@ -901,6 +907,7 @@
         "name": "TYPE 07 · 发疯体人格 T 恤",
         "personality": "crazy",
         "image": "assets/media/type07/front.webp",
+        "display_color": "白",
         "available_colors": ["白"],
         "stock_total": 23,
         "stock_by_size": {"XS": 2, "S": 3, "M": 3, "L": 5, "XL": 5, "XXL": 3, "3XL": 2}
@@ -910,6 +917,7 @@
         "name": "TYPE 08 · 清醒体人格 T 恤",
         "personality": "awake",
         "image": "assets/media/type08/front.webp",
+        "display_color": "白",
         "available_colors": ["黑"],
         "stock_total": 55,
         "stock_by_size": {"XS": 5, "S": 5, "M": 10, "L": 10, "XL": 10, "XXL": 10, "3XL": 5}

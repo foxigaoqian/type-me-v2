@@ -64,13 +64,17 @@ function renderResult(){
 }
 function renderProduct(){
   const p=state.result.primary,product=state.products.products[p.key],d=state.products.details||{},labels=state.products.size_labels||{};
-  const colors=product?.available_colors||state.products.colors||[];if(!colors.includes(state.color))state.color=colors[0]||'';
+  const availableColors=product?.available_colors||state.products.colors||[];
+  const displayColor=product?.display_color||availableColors[0]||'';
+  const colors=state.products.sales_enabled?availableColors:[displayColor].filter(Boolean);if(!colors.includes(state.color))state.color=colors[0]||'';
   const sizes=(state.products.sizes||[]).filter(size=>Number(product?.stock_by_size?.[size]||0)>0);if(!sizes.includes(state.size))state.size=sizes[0]||'';
   $('productName').textContent=product?.name||`${p.type} · ${p.cn}人格 T 恤`;
   const colorHex={'黑':'#111111','白':'#ffffff','灰':'#a9a9a9'};
   $('colorChips').innerHTML=colors.map(c=>`<button class="chip color-chip ${c===state.color?'active':''}" data-v="${c}" aria-pressed="${c===state.color}"><span class="color-dot" style="--chip-color:${colorHex[c]||'#dddddd'}"></span><span>${c}</span></button>`).join('');
   $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip size-chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}" aria-label="${labels[s]||s}，库存 ${product.stock_by_size[s]} 件">${labels[s]||s}</button>`).join('');
-  $('productInventory').textContent=`当前批次：${colors.join(' / ')} · 合计 ${Number(product?.stock_total||0)} 件；库存已同步但暂不开放支付。`;
+  $('productInventory').textContent=state.products.sales_enabled
+    ?`当前批次：${availableColors.join(' / ')} · 合计 ${Number(product?.stock_total||0)} 件。`
+    :`当前视觉展示：${displayColor||'待确认'}；正式开售颜色以真实商品与 SKU 库存表为准。`;
   const specs=[["面料",d.material],["克重",d.weight],["纱支",d.yarn_count],["版型",d.fit],["领口",d.collar],["印花",d.print_method],["缩水率",d.shrinkage_rate!=null?`${Math.round(Number(d.shrinkage_rate)*100)}%`:''],["抗起球",d.pilling],["色牢度",d.colorfastness],["透度",d.opacity]].filter(x=>x[1]);
   $('productSpecs').innerHTML=specs.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
   $('sizeGuideRows').innerHTML=state.products.sizes.map(size=>{const x=d.size_spec_cm?.[size]||{};return `<tr><td><b>${labels[size]||size}</b></td><td>${x.bust??'-'}</td><td>${x.length??'-'}</td><td>${x.shoulder??'-'}</td></tr>`}).join('');
