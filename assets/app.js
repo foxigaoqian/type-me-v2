@@ -56,6 +56,9 @@ function renderResult(){
   $('secondaryType').textContent=s.type;$('secondaryName').textContent=s.cn;$('secondaryCore').textContent=s.core;$('skillText').textContent=p.skill;$('weaknessText').textContent=p.weakness;
   const sample=state.result.sample||{};if((sample.total||0)>=100&&sample.percent!==null){$('populationStat').textContent=`${sample.percent}%`;$('populationNote').textContent=`当前已完成测试用户中，${p.cn}占比。`}else{$('populationStat').textContent='样本正在积累中';$('populationNote').textContent='完成样本不足 100 时不展示比例。'}
   $('cardType').textContent=p.type;$('cardName').textContent=p.cn;$('cardEn').textContent=p.en;$('cardCore').textContent=p.core;
+  const generatedCard=$('generatedCardWrap');if(generatedCard)generatedCard.remove();
+  document.querySelector('.identity-section')?.classList.remove('has-generated-card');
+  $('cardStatus').textContent='二维码会绑定本次分享归因。';
   $('productTeaserVisual').src=assetUrl(media.front||media.main);$('productTeaserVisual').alt=`${p.type} ${p.cn} T 恤视觉`;$('productTeaserName').textContent=`${p.type} ${p.cn} T 恤`;
   renderProduct()
 }
