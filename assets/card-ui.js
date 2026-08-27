@@ -21,9 +21,9 @@ generateIdentityCard = async function(){
       <div class="generated-card-content">
         <span class="generated-card-kicker">CAMPUS IDENTITY READY</span>
         <h3>你的人格身份证已生成</h3>
-        <p>${d.width}×${d.height} 高清 PNG，已包含本次人格结果和专属分享二维码。</p>
+        <p>高清图片已生成，包含你的人格结果和专属分享二维码。</p>
         <div class="generated-card-actions">
-          <a id="saveCardLink" class="primary-btn" href="${d.card_url}" download="${filename}">保存人格身份证 PNG</a>
+          <a id="saveCardLink" class="primary-btn" href="${d.card_url}" download="${filename}">保存人格身份证</a>
           <button id="regenerateCardBtn" class="secondary-btn" type="button">重新生成</button>
         </div>
         <small>长按图片或点击保存按钮，即可分享给好友。</small>
@@ -33,11 +33,12 @@ generateIdentityCard = async function(){
     document.querySelector('.identity-section').classList.add('has-generated-card');
     document.getElementById('saveCardLink').onclick=()=>track('identity_card_save',{attempt_id:state.attemptId,share_id:d.share_id});
     document.getElementById('regenerateCardBtn').onclick=()=>btn.click();
-    $('cardStatus').textContent=`已生成 ${d.width}×${d.height} PNG。二维码已绑定本次分享归因。${d.preview_mode?' 当前为 Preview 测试模式。':''}`;
+    $('cardStatus').textContent='人格身份证已生成，可以保存或分享给朋友。';
     toast('人格身份证已生成');
     requestAnimationFrame(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}));
   }catch(e){
-    $('cardStatus').textContent=`生成失败：${e.message}`;
-    toast(e.message);
+    console.error('identity card failed',e);
+    $('cardStatus').textContent='人格身份证暂未生成，请稍后重试。';
+    toast('生成暂未完成，请稍后重试');
   }finally{btn.disabled=false;btn.textContent=original}
 };
