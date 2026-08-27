@@ -13,8 +13,8 @@ function dormInit(){
   if(dormState.inviteCode){
     const banner=$('dormInviteBanner');
     if(banner){banner.hidden=false;$('dormInviteCode').textContent=dormState.inviteCode;}
-    if($('startBtn'))$('startBtn').textContent='接受宿舍挑战，开始测试 →';
-    if($('startBtn2'))$('startBtn2').textContent='接受挑战，开始测试';
+    if($('startBtn'))$('startBtn').textContent='加入宿舍组合，开始测试 →';
+    if($('startBtn2'))$('startBtn2').textContent='加入组合，开始测试';
     track('dorm_invite_view',{dorm_code:dormState.inviteCode});
     loadDormStatus(dormState.inviteCode,false).then(d=>{
       if($('dormInviteProgress'))$('dormInviteProgress').textContent=`当前 ${d.member_count}/4 已完成，完成测试后你会自动加入。`;
@@ -48,7 +48,7 @@ async function createDorm(){
 
 async function joinInvitedDorm(){
   if(!dormState.inviteCode||!state.result)return;
-  const box=$('dormJoinStatus');if(box){box.hidden=false;box.textContent='正在加入宿舍人格挑战…'}
+  const box=$('dormJoinStatus');if(box){box.hidden=false;box.textContent='正在加入宿舍组合…'}
   try{
     const d=await postJSON(`${API_BASE}/api/dorm/join.php`,{
       invite_code:dormState.inviteCode,
@@ -59,7 +59,7 @@ async function joinInvitedDorm(){
     dormState.current=d.dorm;localStorage.setItem('type_me_last_dorm',d.dorm.invite_code);
     if(box){box.innerHTML=`<b>已加入 ${escapeDormHtml(d.dorm.name)}</b><br>${d.dorm.member_count}/4 位已完成。${d.dorm.status==='COMPLETE'?'宿舍报告已解锁。':'还差 '+(4-d.dorm.member_count)+' 位室友。'}`}
     if($('viewDormBtn'))$('viewDormBtn').hidden=false;
-    toast(d.dorm.status==='COMPLETE'?'4/4 完成，宿舍报告已解锁':'已加入宿舍挑战');
+    toast(d.dorm.status==='COMPLETE'?'4/4 完成，宿舍报告已解锁':'已加入宿舍组合');
   }catch(e){console.error('join dorm failed',e);if(box){box.hidden=false;box.textContent='加入宿舍暂未完成，请稍后重试'}throw e}
 }
 
@@ -118,7 +118,7 @@ async function copyDormInvite(){
 
 async function shareDormInvite(){
   const d=dormState.current;if(!d)return;
-  try{if(navigator.share)await navigator.share({title:`TYPE ME｜${d.name} 宿舍人格挑战`,text:'我们宿舍还差人，测测你是哪种大学生物种。',url:d.invite_url});else await copyDormInvite();track('dorm_share',{dorm_id:d.dorm_id,dorm_code:d.invite_code,dorm_member_count:d.member_count})}catch(e){}
+  try{if(navigator.share)await navigator.share({title:`TYPE ME｜${d.name} 宿舍组合`,text:'我们宿舍还差人，测测你是哪种大学生物种。',url:d.invite_url});else await copyDormInvite();track('dorm_share',{dorm_id:d.dorm_id,dorm_code:d.invite_code,dorm_member_count:d.member_count})}catch(e){}
 }
 
 async function generateDormDoorplate(){
@@ -128,11 +128,11 @@ async function generateDormDoorplate(){
     const r=await postJSON(`${API_BASE}/api/dorm/card.php`,{invite_code:d.invite_code});
     const oldWrap=$('dormCardWrap');if(oldWrap)oldWrap.remove();
     const wrap=document.createElement('div');wrap.id='dormCardWrap';wrap.className='dorm-card-preview';
-    wrap.innerHTML=`<img src="${r.card_url}" alt="TYPE ME 宿舍人格门牌"><a id="saveDormCard" class="secondary-btn" style="display:block;text-align:center;text-decoration:none;margin-top:10px" href="${r.card_url}" download="type-me-dorm-${d.invite_code}.png">保存宿舍人格门牌</a>`;
-    $('dormDoorplateBtn').insertAdjacentElement('afterend',wrap);$('saveDormCard').onclick=()=>track('dorm_doorplate_save',{dorm_id:d.dorm_id,dorm_code:d.invite_code,dorm_member_count:d.member_count});toast('宿舍人格门牌已生成');
+    wrap.innerHTML=`<img src="${r.card_url}" alt="TYPE ME 宿舍组合门牌"><a id="saveDormCard" class="secondary-btn" style="display:block;text-align:center;text-decoration:none;margin-top:10px" href="${r.card_url}" download="type-me-dorm-${d.invite_code}.png">保存宿舍组合门牌</a>`;
+    $('dormDoorplateBtn').insertAdjacentElement('afterend',wrap);$('saveDormCard').onclick=()=>track('dorm_doorplate_save',{dorm_id:d.dorm_id,dorm_code:d.invite_code,dorm_member_count:d.member_count});toast('宿舍组合门牌已生成');
   }catch(e){console.error('dorm doorplate failed',e);toast('门牌生成暂未完成，请稍后重试')}finally{btn.disabled=false;btn.textContent=old}
 }
 
-function escapeDormHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]))}
+function escapeDormHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
 setTimeout(dormInit,0);

@@ -1,7 +1,9 @@
 const APP_PREFIX=window.location.pathname.startsWith('/v2-preview')?'/v2-preview':'';const API_BASE=window.location.origin+APP_PREFIX;const URL_PARAMS=new URLSearchParams(location.search);
+const internalParam=(URL_PARAMS.get('internal')||'').toLowerCase();if(['1','true','yes'].includes(internalParam))sessionStorage.setItem('type_me_internal_test','1');if(['0','false','off'].includes(internalParam))sessionStorage.removeItem('type_me_internal_test');const isInternalTest=sessionStorage.getItem('type_me_internal_test')==='1';
 const incomingSeedId=(URL_PARAMS.get('seed_id')||URL_PARAMS.get('seed')||'').trim();if(incomingSeedId)localStorage.setItem('type_me_seed_id',incomingSeedId);const persistedSeedId=incomingSeedId||localStorage.getItem('type_me_seed_id')||'';
 const incomingSeedGeneration=Math.max(0,Math.min(20,Number(URL_PARAMS.get('seed_generation')||0)||0));if(incomingSeedId)localStorage.setItem('type_me_seed_generation',String(incomingSeedGeneration));const persistedSeedGeneration=incomingSeedId?incomingSeedGeneration:Math.max(0,Math.min(20,Number(localStorage.getItem('type_me_seed_generation')||0)||0));
-const state={quiz:null,personalities:null,products:null,media:null,step:0,answers:[],attemptId:'',result:null,sessionId:getOrCreate('type_me_session_id',()=>`s_${cryptoRandom(12)}`),source:URL_PARAMS.get('source')||'direct',campaign:URL_PARAMS.get('campaign')||'',seedId:persistedSeedId,seedGeneration:persistedSeedGeneration,schoolId:URL_PARAMS.get('school_id')||URL_PARAMS.get('school')||'',creatorId:URL_PARAMS.get('creator_id')||'',referrerId:URL_PARAMS.get('referrer_id')||URL_PARAMS.get('referrer')||'',shareId:URL_PARAMS.get('share_id')||'',color:'黑',size:'M',currentOrderId:''};
+const requestedSource=URL_PARAMS.get('source')||'direct',requestedCampaign=URL_PARAMS.get('campaign')||'';const effectiveSource=isInternalTest?'test':requestedSource;const effectiveCampaign=isInternalTest?`test-${requestedCampaign||'internal'}`:requestedCampaign;
+const state={quiz:null,personalities:null,products:null,media:null,step:0,answers:[],attemptId:'',result:null,sessionId:getOrCreate('type_me_session_id',()=>`s_${cryptoRandom(12)}`),source:effectiveSource,campaign:effectiveCampaign,seedId:persistedSeedId,seedGeneration:persistedSeedGeneration,schoolId:URL_PARAMS.get('school_id')||URL_PARAMS.get('school')||'',creatorId:URL_PARAMS.get('creator_id')||'',referrerId:URL_PARAMS.get('referrer_id')||URL_PARAMS.get('referrer')||'',shareId:URL_PARAMS.get('share_id')||'',color:'黑',size:'M',currentOrderId:''};
 function cryptoRandom(len=12){const a=new Uint8Array(len);crypto.getRandomValues(a);return[...a].map(x=>x.toString(16).padStart(2,'0')).join('')}
 function getOrCreate(key,factory){let v=localStorage.getItem(key);if(!v){v=factory();localStorage.setItem(key,v)}return v}
 function $(id){return document.getElementById(id)}
@@ -30,7 +32,7 @@ function bind(){
   $('closeNativeBtn').onclick=()=>$('nativePayModal').classList.remove('open')
 }
 function openDormEntry(){
-  if(!state.result){toast('先完成测试，再创建宿舍挑战');startQuiz();return}
+  if(!state.result){toast('先完成测试，再看看你们宿舍是什么组合');startQuiz();return}
   showPage('result');setTimeout(()=>$('dormChallengeBlock').scrollIntoView({behavior:'smooth',block:'center'}),30)
 }
 function renderHomeVisual(){const home=state.media?.home||{},lead=home.lead||(home.supporting||[])[0];$('homeVisual').innerHTML=lead?`<img src="${assetUrl(lead)}" alt="TYPE ME 校园人格主视觉" width="1200" height="750" fetchpriority="high">`:'';if(state.media?.dorm){$('dormEntryVisual').src=assetUrl(state.media.dorm);$('homeDormVisual').src=assetUrl(state.media.dorm)}}
@@ -76,10 +78,10 @@ function renderProduct(){
   const priceFen=Number(product?.price_fen||state.products.default_price*100||12900),regularFen=Number(product?.regular_price_fen||state.products.regular_price*100||priceFen);const priceText=`¥${formatFen(priceFen)}`;$('productTeaserPrice').textContent=priceText;$('productPrice').textContent=priceText;$('productRegularPrice').textContent=`日常价 ¥${formatFen(regularFen)}`;$('productStickyPrice').textContent=priceText;$('payBtn').textContent=`确认并支付 ${priceText}`;
   const colorHex={'黑':'#111111','白':'#ffffff','灰':'#a9a9a9'};
   $('colorChips').innerHTML=colors.map(c=>`<button class="chip color-chip ${c===state.color?'active':''}" data-v="${c}" aria-pressed="${c===state.color}"><span class="color-dot" style="--chip-color:${colorHex[c]||'#dddddd'}"></span><span>${c}</span></button>`).join('');
-  $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip size-chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}" aria-label="${labels[s]||s}，库存 ${product.stock_by_size[s]} 件">${labels[s]||s}</button>`).join('');
+  $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip size-chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}" aria-label="${labels[s]||s}，库存 ${Number(product?.inventory?.[state.color]?.[s]??product?.stock_by_size?.[s]??0)} 件">${labels[s]||s}</button>`).join('');
   $('productInventory').textContent=purchasable
     ?`可选颜色：${availableColors.join(' / ')} · 当前有货 ${Number(product?.stock_total||0)} 件。`
-    :`当前可查看：${displayColor||'商品预览'}；该款暂时无法下单。`;
+    :`${product?.sales_status||state.products.sales_status||'该款暂时缺货'}`;
   const specs=[["面料",d.material],["克重",d.weight],["纱支",d.yarn_count],["版型",d.fit],["领口",d.collar],["印花",d.print_method],["缩水率",d.shrinkage_rate!=null?`${Math.round(Number(d.shrinkage_rate)*100)}%`:''],["抗起球",d.pilling],["色牢度",d.colorfastness],["透度",d.opacity]].filter(x=>x[1]);
   $('productSpecs').innerHTML=specs.map(x=>`<div><span>${x[0]}</span><b>${x[1]}</b></div>`).join('');
   $('sizeGuideRows').innerHTML=state.products.sizes.map(size=>{const x=d.size_spec_cm?.[size]||{};return `<tr><td><b>${labels[size]||size}</b></td><td>${x.bust??'-'}</td><td>${x.length??'-'}</td><td>${x.shoulder??'-'}</td></tr>`}).join('');

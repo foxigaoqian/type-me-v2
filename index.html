@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#f3f0e9">
   <title>TYPE ME｜你是哪种大学生物种？</title>
-  <meta name="description" content="12 道不太正经的问题，看看你的校园隐藏人格。">
+  <meta name="description" content="12 个大学日常场景，看看系统把你分到了哪一种。">
   <link rel="stylesheet" href="assets/styles.css?v=3">
   <link rel="stylesheet" href="assets/product-mockup.css?v=3">
   <link rel="stylesheet" href="assets/dorm.css?v=2">
@@ -19,7 +19,7 @@
   <header class="topbar">
     <button class="brand" id="brandBtn" type="button" aria-label="返回 TYPE ME 首页">TYPE ME</button>
     <div class="top-actions">
-      <button class="top-link" id="dormTopBtn" type="button">宿舍挑战</button>
+      <button class="top-link" id="dormTopBtn" type="button">宿舍组合</button>
       <button class="icon-btn" id="homeBtn" type="button" aria-label="回到首页" hidden>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5v8a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
       </button>
@@ -29,12 +29,12 @@
     <section id="homePage" class="page active">
       <div class="home-hero">
         <div class="hero-copy">
-          <span class="eyebrow">CAMPUS PERSONALITY TEST</span>
+          <span class="eyebrow">FIND YOUR TYPE</span>
           <h1>你是哪种<br>大学生物种？</h1>
-          <p class="sub">12 道不太正经的问题，看清你的校园隐藏人格。</p>
+          <p class="sub">12 个大学日常场景，看看系统把你分到了哪一种。</p>
           <div class="meta-row"><span class="meta-chip">约 60 秒</span><span class="meta-chip">免费</span><span class="meta-chip">不用登录</span></div>
           <div id="dormInviteBanner" class="dorm-invite-banner" hidden>
-            <strong>你被拉进一个宿舍人格挑战</strong>
+            <strong>你被拉进一个宿舍组合</strong>
             <div>邀请码：<b id="dormInviteCode"></b></div>
             <div id="dormInviteProgress" style="margin-top:6px;font-size:13px">完成 12 题后自动加入这个宿舍。</div>
           </div>
@@ -54,8 +54,8 @@
         <div><span>03</span><strong>人格身份证</strong><small>生成专属分享卡</small></div>
       </div>
       <div class="home-dorm-banner">
-        <img id="homeDormVisual" src="assets/media/type07/scene.webp" alt="大学宿舍同学参与人格挑战" width="1200" height="750" loading="lazy">
-        <div class="home-dorm-copy"><span>DORM CHALLENGE</span><h2>宿舍人格挑战</h2><p>邀请 3 位室友，看看你们宿舍是什么物种组合。</p><button id="homeDormBtn" class="banner-link" type="button">开始创建 →</button></div>
+        <img id="homeDormVisual" src="assets/media/type07/scene.webp" alt="大学宿舍同学参与组合挑战" width="1200" height="750" loading="lazy">
+        <div class="home-dorm-copy"><span>YOUR DORM TYPE</span><h2>你们宿舍是什么组合？</h2><p>拉 3 个室友一起测，4/4 解锁《宿舍精神状态报告》。</p><button id="homeDormBtn" class="banner-link" type="button">拉室友一起测 →</button></div>
       </div>
       <div id="distributionBlock" class="section" hidden>
         <h2>最近测出的校园人格</h2>
@@ -115,14 +115,14 @@
 
       <nav class="result-branch-grid" aria-label="测试结果下一步">
         <button class="result-branch" id="shareBtn" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 12l8-8m0 0H9m7 0v7M5 8v11h11v-5"/></svg></span><strong>分享给朋友</strong><small id="friendShareCopy">让朋友继续测试</small></button>
-        <button class="result-branch" id="resultDormBranch" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10M9 20v-6h6v6"/></svg></span><strong>宿舍挑战</strong><small>邀请 3 位室友</small></button>
+        <button class="result-branch" id="resultDormBranch" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5 10v10h14V10M9 20v-6h6v6"/></svg></span><strong>宿舍组合</strong><small>拉 3 位室友一起测</small></button>
         <button class="result-branch" id="resultProductBranch" type="button"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m8 5 4-2 4 2 4 2-2 4-2-1v11H8V10l-2 1-2-4 4-2Z"/></svg></span><strong>看我的 T 恤</strong><small>颜色与尺码</small></button>
       </nav>
 
       <div class="section dorm-entry result-dorm-entry" id="dormChallengeBlock">
         <div class="dorm-entry-card">
-          <img id="dormEntryVisual" class="dorm-entry-visual" src="assets/media/type01/scene.webp" alt="大学宿舍同学一起参与人格挑战" width="1200" height="1200" loading="lazy">
-          <div class="dorm-entry-overlay"><div class="dorm-kicker">DORM PERSONALITY CHALLENGE</div><h3>宿舍人格挑战</h3><p>邀请 3 位室友，4/4 解锁宿舍精神状态报告。</p><label class="sr-only" for="dormNameInput">宿舍名称，可选</label><input id="dormNameInput" class="dorm-name-field" maxlength="16" placeholder="宿舍名（可选，例如 404）"><button class="banner-link" id="createDormBtn">创建我的宿舍 →</button><div id="dormJoinStatus" class="dorm-preview-warning" hidden></div><button id="viewDormBtn" class="secondary-btn" style="margin-top:10px" hidden>查看宿舍进度</button></div>
+          <img id="dormEntryVisual" class="dorm-entry-visual" src="assets/media/type01/scene.webp" alt="大学宿舍同学一起参与组合挑战" width="1200" height="1200" loading="lazy">
+          <div class="dorm-entry-overlay"><div class="dorm-kicker">YOUR DORM TYPE</div><h3>你们宿舍是什么组合？</h3><p>拉 3 个室友一起测，4/4 解锁《宿舍精神状态报告》。</p><label class="sr-only" for="dormNameInput">宿舍名称，可选</label><input id="dormNameInput" class="dorm-name-field" maxlength="16" placeholder="宿舍名（可选，例如 404）"><button class="banner-link" id="createDormBtn">创建宿舍组合 →</button><div id="dormJoinStatus" class="dorm-preview-warning" hidden></div><button id="viewDormBtn" class="secondary-btn" style="margin-top:10px" hidden>查看宿舍进度</button></div>
         </div>
       </div>
 
@@ -148,7 +148,7 @@
             <div class="inventory-line" id="productInventory"></div>
             <div class="product-accordion-list">
               <details class="product-accordion"><summary>商品参数</summary><div class="product-accordion-body"><div class="product-specs" id="productSpecs"></div></div></details>
-              <details class="product-accordion"><summary>尺码建议</summary><div class="product-accordion-body"><div class="size-guide-scroll"><table><thead><tr><th>尺码</th><th>胸围</th><th>衣长</th><th>肩宽</th></tr></thead><tbody id="sizeGuideRows"></tbody></table></div><div class="model-ref" id="modelRef"></div></div></details>
+              <details class="product-accordion"><summary>尺码建议</summary><div class="product-accordion-body"><div class="size-guide-scroll"><table><thead><tr><th>尺码</th><th>胸围(cm)</th><th>衣长(cm)</th><th>肩宽(cm)</th></tr></thead><tbody id="sizeGuideRows"><tr><td><b>XS</b></td><td>88</td><td>61</td><td>43</td></tr><tr><td><b>S</b></td><td>92</td><td>62</td><td>45</td></tr><tr><td><b>M</b></td><td>96</td><td>63</td><td>47</td></tr><tr><td><b>L</b></td><td>100</td><td>64</td><td>49</td></tr><tr><td><b>XL</b></td><td>104</td><td>72</td><td>51</td></tr><tr><td><b>2XL</b></td><td>108</td><td>74</td><td>53</td></tr><tr><td><b>3XL</b></td><td>113</td><td>76</td><td>56</td></tr><tr><td><b>4XL</b></td><td>118</td><td>78</td><td>59</td></tr></tbody></table></div><div class="model-ref" id="modelRef"></div></div></details>
               <details class="product-accordion"><summary>洗涤护理</summary><div class="product-accordion-body"><ul class="care-list" id="careList"></ul></div></details>
               <details class="product-accordion"><summary>发货与售后</summary><div class="product-accordion-body"><div class="fulfillment-note" id="fulfillmentNote"></div></div></details>
             </div>
@@ -156,14 +156,14 @@
           <div class="product-detail-story"><div class="section-heading compact"><div><span class="section-kicker">REAL PRODUCT DETAILS</span><h2>真实商品细节</h2></div></div><div class="detail-photo-grid" id="productDetailPhotos"></div><p class="notice" id="productPendingNote"></p></div>
         </div>
       </div>
-      <div class="product-sticky-bar" aria-label="商品购买栏"><div><small>人格认证价</small><strong id="productStickyPrice">¥129</strong></div><button class="primary-btn" id="buyBtn" disabled>正在准备商品…</button></div>
+      <div class="product-sticky-bar" aria-label="商品购买栏"><div><small>人格认证价</small><strong id="productStickyPrice">¥129</strong></div><button class="primary-btn" id="buyBtn" disabled>商品信息加载中…</button></div>
     </section>
 
     <section id="dormPage" class="page">
       <div class="dorm-page-wrap">
         <button class="back-btn" id="dormBackBtn">← 返回人格结果</button>
         <div class="dorm-head">
-          <div class="dorm-kicker">TYPE ME · DORM SPECIES</div>
+          <div class="dorm-kicker">TYPE ME · DORM COMBO</div>
           <h1 id="dormTitle">我的宿舍</h1>
           <div class="dorm-code" id="dormCode"></div>
           <div class="dorm-progress"><span id="dormProgressText">1 / 4 已完成</span><span>4/4 解锁报告</span></div>
@@ -188,7 +188,7 @@
           <div class="dorm-role-list" id="dormRoles"></div>
           <p style="font-size:12px;color:#888;margin-top:18px">娱乐化宿舍报告，不是心理测量或医学结论。</p>
         </div>
-        <button class="primary-btn" id="dormDoorplateBtn" style="margin-top:14px" hidden>生成宿舍人格门牌</button>
+        <button class="primary-btn" id="dormDoorplateBtn" style="margin-top:14px" hidden>生成宿舍组合门牌</button>
       </div>
     </section>
   </main>
@@ -197,10 +197,10 @@
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/qrcode.min.js?v=1"></script>
-<script src="assets/app.js?v=13"></script>
+<script src="assets/app.js?v=14"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
 <script src="assets/product-mockup.js?v=2"></script>
 <script src="assets/card-ui.js?v=4"></script>
-<script src="assets/dorm.js?v=3"></script>
+<script src="assets/dorm.js?v=4"></script>
 </body>
 </html>
