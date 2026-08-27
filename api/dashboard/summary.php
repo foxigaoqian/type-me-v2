@@ -76,8 +76,8 @@ foreach($events30 as $e){
 }
 foreach($sourceStats as &$s){
     $uv=count($s['landing_users']);$starts=analyticsIntersectCount($s['landing_users'],$s['start_users']);$complete=analyticsIntersectCount($s['start_users'],$s['complete_users']);
-    $shares=analyticsIntersectCount($s['complete_users'],$s['share_users']);$products=analyticsIntersectCount($s['complete_users'],$s['product_users']);$paid=analyticsIntersectCount($s['product_users'],$s['paid_users']);
-    $s=['source'=>$s['source'],'uv'=>$uv,'starts'=>$starts,'complete'=>$complete,'complete_rate'=>rate($starts,$complete),'share_rate'=>rate($complete,$shares),'product_ctr'=>rate($complete,$products),'paid_rate'=>rate($products,$paid)];
+    $shareUserCount=analyticsIntersectCount($s['complete_users'],$s['share_users']);$productUserCount=analyticsIntersectCount($s['complete_users'],$s['product_users']);$paidUserCount=analyticsIntersectCount($s['product_users'],$s['paid_users']);
+    $s=['source'=>$s['source'],'uv'=>$uv,'starts'=>$starts,'complete'=>$complete,'complete_rate'=>rate($starts,$complete),'share_rate'=>rate($complete,$shareUserCount),'product_ctr'=>rate($complete,$productUserCount),'paid_rate'=>rate($productUserCount,$paidUserCount)];
 }unset($s);
 
 $questionUsers=array_fill(1,12,[]);
