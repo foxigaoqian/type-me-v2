@@ -3,6 +3,7 @@
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/wechat_pay.php';
 require_once dirname(__DIR__) . '/lib/db.php';
+require_once dirname(__DIR__) . '/lib/catalog.php';
 
 function enrichV2OrderItems(array $items): array
 {
@@ -14,17 +15,8 @@ function enrichV2OrderItems(array $items): array
     $qty = (int)($item['qty'] ?? 1);
     if ($qty !== 1) throw new InvalidArgumentException('V2 当前每单数量必须为 1');
 
-    $raw = file_get_contents(dirname(__DIR__, 2) . '/config/v2.json');
-    $cfg = json_decode((string)$raw, true);
-    $productCfg = is_array($cfg) ? ($cfg['product_config'] ?? []) : [];
-    if (($productCfg['sales_enabled'] ?? false) !== true) {
-        throw new RuntimeException((string)($productCfg['sales_status'] ?? '商品暂未开放购买'));
-    }
-    $product = $productCfg['products'][$personality] ?? null;
-    if (!is_array($product)) throw new InvalidArgumentException('人格商品不存在');
-    if (!in_array($color, $productCfg['colors'] ?? [], true)) throw new InvalidArgumentException('无效颜色');
-    if (!in_array($size, $productCfg['sizes'] ?? [], true)) throw new InvalidArgumentException('无效尺码');
-
+    if (!catalogPaymentReady()) throw new RuntimeException('商品暂未开放购买');
+    $product = catalogResolveOrderItem($personality, $color, $size);
     $productId = (string)$product['product_id'];
     return [[
         'name'=>(string)$product['name'],
@@ -34,8 +26,8 @@ function enrichV2OrderItems(array $items): array
         'color'=>$color,
         'size'=>$size,
         'product_id'=>$productId,
-        'sku_id'=>$productId.'-'.$color.'-'.$size,
-        'unit_price_fen'=>12900,
+        'sku_id'=>(string)$product['sku_id'],
+        'unit_price_fen'=>(int)$product['price_fen'],
     ]];
 }
 
@@ -53,7 +45,7 @@ $source = trim((string)($body['source'] ?? 'direct'));
 $campaign = trim((string)($body['campaign'] ?? ''));
 $seedId = trim((string)($body['seed_id'] ?? ''));
 
-if ($amount !== 12900 || $description === '') jsonResponse(['code'=>-1,'message'=>'V2 当前仅允许人格认证价 ¥129'],400);
+if ($amount < 1 || $description === '') jsonResponse(['code'=>-1,'message'=>'商品金额或名称无效'],400);
 if ($receiverName === '' || $receiverPhone === '' || $receiverAddress === '') jsonResponse(['code'=>-1,'message'=>'收货信息不完整'],400);
 if (!in_array($scene, ['JSAPI','NATIVE'], true)) jsonResponse(['code'=>-1,'message'=>'不支持的支付场景'],400);
 
@@ -62,6 +54,7 @@ try {
 } catch (Throwable $e) {
     jsonResponse(['code'=>-1,'message'=>$e->getMessage()],400);
 }
+if ($amount !== (int)$items[0]['unit_price_fen']) jsonResponse(['code'=>-1,'message'=>'商品价格已更新，请刷新页面后重试'],409);
 
 $uid = getCurrentUserId();
 $outTradeNo = 'ORD' . date('YmdHis') . random_int(100000,999999);
