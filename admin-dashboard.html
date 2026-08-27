@@ -6,47 +6,97 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <title>TYPE ME V2 Dashboard</title>
   <style>
-    :root{--bg:#f4f1e9;--ink:#111;--card:#fff;--accent:#f3ff38}*{box-sizing:border-box}
-    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:var(--ink)}
-    .wrap{max-width:1280px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top h1{margin:0;font-size:30px}
-    .auth{display:flex;gap:8px}.auth input,.auth button{border:2px solid #111;border-radius:10px;padding:10px}.auth button{background:#111;color:#fff;font-weight:800}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:16px;box-shadow:3px 3px 0 #111}
-    .k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:20px 0}.section h2{font-size:21px;margin:0 0 10px}
-    .table-wrap{overflow:auto;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}
-    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}.dorm-section{background:#111;color:#fff;padding:16px;border-radius:18px}.dorm-section h2{color:var(--accent)}.dorm-section .card{background:#1d1d1f;border-color:#f3ff38;box-shadow:3px 3px 0 #f3ff38}.dorm-section .k{color:#aaa}.dorm-section .v{color:#fff}
-    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}.btn{min-height:44px;border:2px solid #111;border-radius:10px;background:#111;color:#fff;padding:9px 14px;font-weight:800;cursor:pointer;transition:opacity .2s ease,transform .2s ease}.btn:hover{transform:translateY(-1px)}.btn.alt{background:var(--accent);color:#111}.btn.danger{background:#fff;color:#111}.btn:disabled{opacity:.55;cursor:wait;transform:none}.btn:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #5b5bd6;outline-offset:2px}
-    .product-admin,.personality-admin{background:#fff;border:2px solid #111;border-radius:14px;margin:10px 0;overflow:hidden}.product-admin summary,.personality-admin summary{cursor:pointer;padding:14px;font-weight:900;background:#111;color:#fff}.product-form{display:grid;grid-template-columns:2fr 1fr 1fr auto auto;gap:8px;align-items:end;padding:12px}.field{display:grid;gap:4px;font-size:12px;font-weight:700}.field input,.field textarea{min-height:42px;border:1.5px solid #111;border-radius:8px;padding:10px;width:100%;font:inherit;background:#fff}.field textarea{min-height:92px;resize:vertical;line-height:1.5}.field input[readonly]{background:#eee;color:#555}.check{display:flex;gap:6px;align-items:center;min-height:42px}.sku-wrap{overflow:auto;padding:0 12px 12px}.sku-wrap table{min-width:620px}.sku-wrap input[type=number]{width:92px;min-height:40px;border:1.5px solid #111;border-radius:8px;padding:6px}.notice{padding:10px 12px;background:#fff8cf;border-left:4px solid #111;font-size:13px;margin:10px 0}
-    .personality-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.personality-head-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:#ccc}.personality-body{padding:14px}.personality-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.personality-form .wide{grid-column:1/-1}.metrics-editor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric-pair{display:grid;grid-template-columns:1fr 70px;gap:6px}.personality-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #ddd}.personality-actions-right{display:flex;gap:8px}.revision-list{margin:10px 0 0;padding-left:20px;font-size:12px;color:#666}
-    @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.product-form,.personality-form{grid-template-columns:1fr 1fr}.product-form .name-field,.personality-form .wide{grid-column:1/-1}.metrics-editor{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}.auth{width:100%}.auth input{min-width:0;flex:1}.product-form,.personality-form,.metrics-editor{grid-template-columns:1fr}.product-form .name-field,.personality-form .wide{grid-column:auto}.btn{width:100%}.personality-actions,.personality-actions-right{display:grid;width:100%}.personality-head{align-items:flex-start}.personality-admin summary{padding:12px}}
+    :root{--bg:#f4f1e9;--ink:#111;--card:#fff;--accent:#f3ff38;--muted:#666;--line:#d8d4cb;--sidebar:244px;--z-nav:20;--z-overlay:40;--z-drawer:50}*{box-sizing:border-box}
+    html{scroll-behavior:smooth}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"PingFang SC",sans-serif;color:var(--ink);overflow-x:hidden}button,input,textarea{font:inherit}button{touch-action:manipulation}
+    [hidden]{display:none!important}.skip-link{position:fixed;left:12px;top:8px;z-index:100;background:#fff;color:#111;padding:10px 14px;border:2px solid #111;border-radius:8px;transform:translateY(-160%)}.skip-link:focus{transform:none}
+    .page-header{min-height:76px;background:#fff;border-bottom:2px solid #111;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;position:sticky;top:0;z-index:var(--z-nav)}.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-mark{width:42px;height:42px;display:grid;place-items:center;border:2px solid #111;border-radius:12px;background:var(--accent);font-weight:1000;box-shadow:2px 2px 0 #111}.brand h1{margin:0;font-size:22px;line-height:1.1}.brand .muted{margin-top:3px}.menu-toggle{display:none;width:44px;height:44px;border:2px solid #111;border-radius:10px;background:#fff;align-items:center;justify-content:center;cursor:pointer}.menu-toggle svg,.nav-item svg,.external-link svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+    .auth{display:flex;gap:8px;align-items:center}.auth input,.auth button{min-height:44px;border:2px solid #111;border-radius:10px;padding:10px 12px}.auth input{width:220px;background:#fff}.auth button{background:#111;color:#fff;font-weight:800;cursor:pointer}.auth button:disabled{opacity:.55;cursor:wait}
+    .login-status{min-height:22px;padding:8px 20px;background:#fff;border-bottom:1px solid var(--line)}
+    .app-shell{display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);gap:20px;max-width:1600px;margin:0 auto;padding:20px}.sidebar{position:sticky;top:96px;height:calc(100dvh - 116px);min-height:520px;background:#111;color:#fff;border:2px solid #111;border-radius:18px;padding:14px;display:flex;flex-direction:column;box-shadow:4px 4px 0 rgba(0,0,0,.18)}.sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 14px}.sidebar-title{font-size:12px;font-weight:800;letter-spacing:.12em;color:#aaa}.sidebar-close{display:none;width:44px;height:44px;border:1px solid #555;border-radius:10px;background:#222;color:#fff;font-size:24px;cursor:pointer}.nav-list{display:grid;gap:8px}.nav-item{min-height:48px;width:100%;display:flex;align-items:center;gap:10px;border:1px solid transparent;border-radius:12px;background:transparent;color:#ddd;padding:10px 12px;text-align:left;font-weight:800;cursor:pointer;transition:background .2s ease,color .2s ease,border-color .2s ease}.nav-item:hover{background:#242424;color:#fff}.nav-item[aria-selected="true"]{background:var(--accent);color:#111;border-color:#111}.sidebar-foot{margin-top:auto;padding:14px 8px 4px;border-top:1px solid #333}.external-link{min-height:44px;display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:13px;font-weight:800}.drawer-overlay{display:none}
+    .main{min-width:0}.content-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;padding:4px 2px 14px;border-bottom:1px solid var(--line)}.content-head h2{margin:0;font-size:28px}.content-head p{margin:6px 0 0;color:var(--muted);font-size:13px}.view{animation:view-in .2s ease}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}.card{background:var(--card);border:2px solid #111;border-radius:16px;padding:16px;box-shadow:3px 3px 0 #111}.k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:0 0 24px}.section h3{font-size:19px;margin:0 0 10px}
+    .table-wrap{overflow:auto;max-width:100%;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}.pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:var(--muted)}.dorm-section{background:#111;color:#fff;padding:16px;border-radius:18px}.dorm-section h3{color:var(--accent)}.dorm-section .card{background:#1d1d1f;border-color:var(--accent);box-shadow:3px 3px 0 var(--accent)}.dorm-section .k{color:#aaa}.dorm-section .v{color:#fff}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:12px}.toolbar h3{margin:0}.btn{min-height:44px;border:2px solid #111;border-radius:10px;background:#111;color:#fff;padding:9px 14px;font-weight:800;cursor:pointer;transition:opacity .2s ease,background .2s ease,color .2s ease}.btn:hover:not(:disabled){opacity:.82}.btn.alt{background:var(--accent);color:#111}.btn.danger{background:#fff;color:#111}.btn:disabled{opacity:.55;cursor:wait}.btn:focus-visible,.nav-item:focus-visible,.menu-toggle:focus-visible,.sidebar-close:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #5b5bd6;outline-offset:2px}
+    .product-admin,.personality-admin{background:#fff;border:2px solid #111;border-radius:14px;margin:10px 0;overflow:hidden}.product-admin summary,.personality-admin summary{cursor:pointer;padding:14px;font-weight:900;background:#111;color:#fff;min-height:48px}.product-form{display:grid;grid-template-columns:2fr 1fr 1fr auto auto;gap:8px;align-items:end;padding:12px}.field{display:grid;gap:4px;font-size:12px;font-weight:700}.field input,.field textarea{min-height:44px;border:1.5px solid #111;border-radius:8px;padding:10px;width:100%;font:inherit;background:#fff}.field textarea{min-height:92px;resize:vertical;line-height:1.5}.field input[readonly]{background:#eee;color:#555}.check{display:flex;gap:8px;align-items:center;min-height:44px}.check input{width:20px;height:20px}.sku-wrap{overflow:auto;padding:0 12px 12px}.sku-wrap table{min-width:620px}.sku-wrap input[type=number]{width:92px;min-height:44px;border:1.5px solid #111;border-radius:8px;padding:6px}.notice{padding:10px 12px;background:#fff8cf;border-left:4px solid #111;font-size:13px;margin:10px 0}.status-line{min-height:22px;margin-bottom:8px}
+    .personality-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.personality-head-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:#ccc}.personality-body{padding:14px}.personality-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.personality-form .wide{grid-column:1/-1}.metrics-editor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric-pair{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:6px}.personality-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #ddd}.personality-actions-right{display:flex;gap:8px}.revision-list{margin:10px 0 0;padding-left:20px;font-size:12px;color:#666}
+    @keyframes view-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @media(max-width:1100px){.grid{grid-template-columns:1fr 1fr}.product-form{grid-template-columns:2fr 1fr 1fr}.product-form .name-field{grid-column:1/-1}.metrics-editor{grid-template-columns:1fr 1fr}}
+    @media(max-width:900px){.page-header{padding:10px 12px}.menu-toggle{display:flex}.brand h1{font-size:19px}.brand-mark{display:none}.auth input{width:min(42vw,220px)}.login-status{padding-left:12px;padding-right:12px}.app-shell{display:block;padding:14px 12px}.sidebar{position:fixed;left:0;top:0;bottom:0;z-index:var(--z-drawer);width:min(86vw,300px);height:100dvh;min-height:0;border-radius:0 18px 18px 0;transform:translateX(-105%);transition:transform .22s ease}.sidebar.open{transform:none}.sidebar-close{display:block}.drawer-overlay{display:block;position:fixed;inset:0;z-index:var(--z-overlay);background:rgba(0,0,0,.52);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s ease}.drawer-overlay.open{opacity:1;visibility:visible}.content-head{align-items:flex-start}.content-head h2{font-size:24px}}
+    @media(max-width:600px){.page-header{align-items:flex-start;flex-wrap:wrap}.brand{flex:1}.auth{width:100%;order:3}.auth input{min-width:0;width:auto;flex:1}.content-head{margin-bottom:12px}.grid{grid-template-columns:1fr}.product-form,.personality-form,.metrics-editor{grid-template-columns:1fr}.product-form .name-field,.personality-form .wide{grid-column:auto}.btn{width:100%}.toolbar .btn{width:auto}.personality-actions,.personality-actions-right{display:grid;width:100%}.personality-head{align-items:flex-start}.personality-head-meta{justify-content:flex-end}.personality-admin summary{padding:12px}.v{font-size:26px}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.view{animation:none}.sidebar,.drawer-overlay,.nav-item,.btn{transition:none}}
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <div><h1>TYPE ME · Dashboard</h1><div class="muted">真实数据 · 最近30日为主</div></div>
-    <div class="auth"><input id="token" type="password" autocomplete="off" placeholder="后台密码"><button id="load">加载数据</button></div>
+<a class="skip-link" href="#mainContent">跳到主要内容</a>
+<header class="page-header">
+  <div class="brand">
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开后台菜单" aria-expanded="false" aria-controls="sidebar" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="brand-mark" aria-hidden="true">TM</div>
+    <div><h1>TYPE ME 后台</h1><div class="muted">内容、商品与经营数据统一管理</div></div>
   </div>
-  <div id="status" class="muted" style="margin-top:10px"></div>
-  <div id="app" hidden>
-    <div class="grid" id="trafficCards"></div>
-    <div class="section"><h2>测试漏斗</h2><div class="grid" id="testCards"></div><div class="table-wrap"><table><thead><tr><th>题目</th><th>到达</th><th>退出</th><th>退出率</th></tr></thead><tbody id="questionRows"></tbody></table></div></div>
-    <div class="section"><h2>人格分布</h2><div class="table-wrap"><table><thead><tr><th>TYPE</th><th>人格</th><th>人数</th><th>占比</th></tr></thead><tbody id="personalityRows"></tbody></table></div></div>
-    <div class="section"><h2>分享裂变</h2><div class="grid" id="viralCards"></div></div>
-    <div class="section dorm-section"><h2>宿舍人格挑战</h2><div class="muted" style="color:#aaa">核心裂变漏斗 · 创建宿舍 → 拉3位室友 → 4/4 → 门牌分享</div><div class="grid" id="dormCards"></div><div class="grid" id="dormQualityCards"></div></div>
-    <div class="section"><h2>商品漏斗</h2><div class="grid" id="productCards"></div></div>
-    <div class="section"><h2>销售</h2><div class="grid" id="salesCards"></div></div>
-    <div class="section"><h2>人格商业价值</h2><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div>
-    <div class="section"><h2>渠道价值</h2><div class="table-wrap"><table><thead><tr><th>渠道</th><th>UV</th><th>完成率</th><th>分享率</th><th>商品CTR</th><th>支付率</th></tr></thead><tbody id="channelRows"></tbody></table></div></div>
-    <div class="section"><h2>校园来源</h2><div class="table-wrap"><table><thead><tr><th>school_id</th><th>完成测试</th><th>分享率</th><th>支付</th></tr></thead><tbody id="schoolRows"></tbody></table></div></div>
-    <div class="section" id="personalitySection"><div class="toolbar"><div><h2>人格内容管理</h2><div class="muted">共 8 个 TYPE；草稿保存后不会影响线上，点击发布才会生效</div></div><button class="btn alt" id="reloadPersonalities" type="button">刷新人格内容</button></div><div class="notice">TYPE 编号固定不可修改。停用仅关闭数据库文案覆盖并回退到代码默认文案，不改变现有测试计分。</div><div id="personalityStatus" class="muted"></div><div id="personalityList"></div></div>
-    <div class="section" id="catalogSection"><div class="toolbar"><div><h2>商品与库存</h2><div class="muted">价格按元显示；可售库存 = 实物库存 − 已预占</div></div><button class="btn alt" id="reloadCatalog" type="button">刷新商品</button></div><div class="notice">目前 192 个 SKU 库存默认均为 0。正式开放购买前，请按客户库存表填写并保存。</div><div id="catalogStatus" class="muted"></div><div id="catalogList"></div></div>
-    <div class="section" id="orderSection"><div class="toolbar"><div><h2>订单管理</h2><div class="muted">最近 100 条订单，包含支付及退款状态</div></div><button class="btn alt" id="reloadOrders" type="button">刷新订单</button></div><div id="orderStatus" class="muted"></div><div class="table-wrap"><table><thead><tr><th>订单号</th><th>时间</th><th>状态</th><th>金额</th><th>商品</th><th>收件信息</th></tr></thead><tbody id="orderRows"></tbody></table></div></div>
-  </div>
+  <div class="auth"><input id="token" type="password" autocomplete="off" aria-label="后台密码" placeholder="后台密码"><button id="load" type="button">进入后台</button></div>
+</header>
+<div id="status" class="muted login-status" role="status" aria-live="polite"></div>
+<div class="app-shell" id="app" hidden>
+  <aside class="sidebar" id="sidebar" aria-label="后台主菜单">
+    <div class="sidebar-head"><span class="sidebar-title">管理菜单</span><button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭后台菜单">×</button></div>
+    <nav class="nav-list" aria-label="后台功能">
+      <button class="nav-item" type="button" data-view="overview" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>数据总览</span></button>
+      <button class="nav-item" type="button" data-view="personality" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14.5"/><path d="M8 7h8M8 11h8M8 15h5"/></svg><span>人格内容</span></button>
+      <button class="nav-item" type="button" data-view="catalog" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-1 13H5L4 7Z"/><path d="M8 7a4 4 0 0 1 8 0"/></svg><span>商品与库存</span></button>
+      <button class="nav-item" type="button" data-view="orders" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg><span>订单管理</span></button>
+    </nav>
+    <div class="sidebar-foot"><a class="external-link" href="./" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg><span>打开正式网站</span></a></div>
+  </aside>
+  <button class="drawer-overlay" id="drawerOverlay" type="button" aria-label="关闭后台菜单" tabindex="-1"></button>
+  <main class="main" id="mainContent" tabindex="-1">
+    <div class="content-head"><div><h2 id="viewTitle">数据总览</h2><p id="viewDescription">查看测试、分享、商品与销售的核心数据</p></div></div>
+    <section class="view" data-view-panel="overview" aria-labelledby="viewTitle">
+      <div class="grid" id="trafficCards"></div>
+      <div class="section"><h3>测试漏斗</h3><div class="grid" id="testCards"></div><div class="table-wrap"><table><thead><tr><th>题目</th><th>到达</th><th>退出</th><th>退出率</th></tr></thead><tbody id="questionRows"></tbody></table></div></div>
+      <div class="section"><h3>人格分布</h3><div class="table-wrap"><table><thead><tr><th>TYPE</th><th>人格</th><th>人数</th><th>占比</th></tr></thead><tbody id="personalityRows"></tbody></table></div></div>
+      <div class="section"><h3>分享裂变</h3><div class="grid" id="viralCards"></div></div>
+      <div class="section dorm-section"><h3>宿舍人格挑战</h3><div class="muted" style="color:#aaa">核心裂变漏斗 · 创建宿舍 → 拉3位室友 → 4/4 → 门牌分享</div><div class="grid" id="dormCards"></div><div class="grid" id="dormQualityCards"></div></div>
+      <div class="section"><h3>商品漏斗</h3><div class="grid" id="productCards"></div></div>
+      <div class="section"><h3>销售</h3><div class="grid" id="salesCards"></div></div>
+      <div class="section"><h3>人格商业价值</h3><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div>
+      <div class="section"><h3>渠道价值</h3><div class="table-wrap"><table><thead><tr><th>渠道</th><th>UV</th><th>完成率</th><th>分享率</th><th>商品CTR</th><th>支付率</th></tr></thead><tbody id="channelRows"></tbody></table></div></div>
+      <div class="section"><h3>校园来源</h3><div class="table-wrap"><table><thead><tr><th>school_id</th><th>完成测试</th><th>分享率</th><th>支付</th></tr></thead><tbody id="schoolRows"></tbody></table></div></div>
+    </section>
+    <section class="view" data-view-panel="personality" aria-labelledby="viewTitle" hidden><div class="section" id="personalitySection"><div class="toolbar"><div><h3>8 种人格文案</h3><div class="muted">草稿保存后不会影响线上，点击发布才会生效</div></div><button class="btn alt" id="reloadPersonalities" type="button">刷新人格内容</button></div><div class="notice">TYPE 编号固定不可修改。停用仅关闭数据库文案覆盖并回退到代码默认文案，不改变现有测试计分。</div><div id="personalityStatus" class="muted status-line" role="status" aria-live="polite"></div><div id="personalityList"></div></div></section>
+    <section class="view" data-view-panel="catalog" aria-labelledby="viewTitle" hidden><div class="section" id="catalogSection"><div class="toolbar"><div><h3>商品与库存</h3><div class="muted">价格按元显示；可售库存 = 实物库存 − 已预占</div></div><button class="btn alt" id="reloadCatalog" type="button">刷新商品</button></div><div class="notice">目前 192 个 SKU 库存默认均为 0。正式开放购买前，请按客户库存表填写并保存。</div><div id="catalogStatus" class="muted status-line" role="status" aria-live="polite"></div><div id="catalogList"></div></div></section>
+    <section class="view" data-view-panel="orders" aria-labelledby="viewTitle" hidden><div class="section" id="orderSection"><div class="toolbar"><div><h3>最近 100 条订单</h3><div class="muted">查看支付及退款状态</div></div><button class="btn alt" id="reloadOrders" type="button">刷新订单</button></div><div id="orderStatus" class="muted status-line" role="status" aria-live="polite"></div><div class="table-wrap"><table><thead><tr><th>订单号</th><th>时间</th><th>状态</th><th>金额</th><th>商品</th><th>收件信息</th></tr></thead><tbody id="orderRows"></tbody></table></div></div></section>
+  </main>
 </div>
 <script>
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
 const num=value=>Number.isFinite(Number(value))?Number(value):0;
+const dashboardViews={
+  overview:{title:'数据总览',description:'查看测试、分享、商品与销售的核心数据'},
+  personality:{title:'人格内容',description:'管理 8 个 TYPE 的结果页、身份证、好友、T 恤与分享文案'},
+  catalog:{title:'商品与库存',description:'维护商品价格、启停状态和 192 个 SKU 库存'},
+  orders:{title:'订单管理',description:'查看最近订单、支付状态和退款状态'}
+};
+function requestedView(){const name=location.hash.replace(/^#/,'');return dashboardViews[name]?name:'overview'}
+function closeSidebar(){
+  $('sidebar').classList.remove('open');$('drawerOverlay').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');document.body.style.overflow='';
+}
+function openSidebar(){
+  $('sidebar').classList.add('open');$('drawerOverlay').classList.add('open');$('menuToggle').setAttribute('aria-expanded','true');if(matchMedia('(max-width:900px)').matches)document.body.style.overflow='hidden';
+}
+function setDashboardView(name,{historyMode='push',focus=true}={}){
+  const view=dashboardViews[name]?name:'overview',meta=dashboardViews[view];
+  document.querySelectorAll('[data-view-panel]').forEach(panel=>{panel.hidden=panel.dataset.viewPanel!==view});
+  document.querySelectorAll('.nav-item[data-view]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.view===view)));
+  $('viewTitle').textContent=meta.title;$('viewDescription').textContent=meta.description;
+  const nextHash='#'+view;if(location.hash!==nextHash){if(historyMode==='replace')history.replaceState({dashboardView:view},'',nextHash);else if(historyMode==='push')history.pushState({dashboardView:view},'',nextHash)}
+  closeSidebar();if(focus)$('mainContent').focus({preventScroll:true});window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
+document.querySelectorAll('.nav-item[data-view]').forEach(button=>button.addEventListener('click',()=>setDashboardView(button.dataset.view)));
+$('menuToggle').addEventListener('click',()=>$('sidebar').classList.contains('open')?closeSidebar():openSidebar());
+$('sidebarClose').addEventListener('click',closeSidebar);$('drawerOverlay').addEventListener('click',closeSidebar);
+window.addEventListener('popstate',()=>setDashboardView(requestedView(),{historyMode:'none'}));
+window.addEventListener('keydown',event=>{if(event.key==='Escape')closeSidebar()});
 function card(k,v){return `<div class="card"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div></div>`}
 function money(fen){return `¥${(num(fen)/100).toFixed(2)}`}
 function pct(v){return `${num(v).toFixed(1)}%`}
@@ -55,13 +105,14 @@ $('token').addEventListener('keydown',e=>{if(e.key==='Enter')load()});
 async function load(){
   const token=$('token').value.trim();
   if(!token){$('status').textContent='请输入后台密码';return}
-  $('status').textContent='加载中…';$('app').hidden=true;
+  const loadButton=$('load');loadButton.disabled=true;loadButton.textContent='验证中…';$('status').textContent='正在验证并加载数据…';$('app').hidden=true;$('menuToggle').hidden=true;
   try{
     const r=await fetch('./api/dashboard/summary.php',{headers:{'X-Admin-Token':token},cache:'no-store',credentials:'same-origin'});
     if(!r.ok){$('status').textContent=`加载失败：HTTP ${r.status}`;return}
     const d=await r.json();
-    $('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;render(d);await Promise.all([loadPersonalities(),loadCatalog(),loadOrders()]);
+    $('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;$('menuToggle').hidden=false;render(d);setDashboardView(requestedView(),{historyMode:'replace',focus:false});await Promise.all([loadPersonalities(),loadCatalog(),loadOrders()]);
   }catch(e){$('status').textContent='加载失败：网络错误'}
+  finally{loadButton.disabled=false;loadButton.textContent='进入后台'}
 }
 function render(d){
   const t=d.traffic||{};
