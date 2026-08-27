@@ -110,7 +110,7 @@
           <img class="card-visual" id="cardVisual" src="" alt="" width="1200" height="1200">
           <div class="card-preview-top"><small>TYPE ME · CAMPUS SPECIES</small><div id="cardType"></div></div>
           <div class="card-preview-copy"><h4 id="cardName"></h4><div id="cardEn"></div><div id="cardCore"></div></div>
-        </div><div class="identity-copy"><span class="identity-index">TYPE ID / 01</span><h3>生成你的专属校园身份</h3><p>保存 1080×1920 人格卡，分享给好友看看他们是什么 TYPE。</p><div class="identity-actions"><button class="primary-btn" id="generateCardBtn">生成我的人格卡 →</button></div><p class="notice" id="cardStatus">二维码会绑定本次分享归因。</p></div></div>
+        </div><div class="identity-copy"><span class="identity-index">TYPE ID / 01</span><h3>生成你的专属校园身份</h3><p>保存 1080×1920 人格卡，分享给好友看看他们是什么 TYPE。</p><div class="identity-actions"><button class="primary-btn" id="generateCardBtn">生成我的人格卡 →</button></div><p class="notice" id="cardStatus">生成后可保存图片，也可以分享给朋友。</p></div></div>
       </div>
 
       <nav class="result-branch-grid" aria-label="测试结果下一步">
@@ -156,7 +156,7 @@
           <div class="product-detail-story"><div class="section-heading compact"><div><span class="section-kicker">REAL PRODUCT DETAILS</span><h2>真实商品细节</h2></div></div><div class="detail-photo-grid" id="productDetailPhotos"></div><p class="notice" id="productPendingNote"></p></div>
         </div>
       </div>
-      <div class="product-sticky-bar" aria-label="商品购买栏"><div><small>人格认证价</small><strong id="productStickyPrice">¥129</strong></div><button class="primary-btn" id="buyBtn" disabled>商品暂未开放购买</button></div>
+      <div class="product-sticky-bar" aria-label="商品购买栏"><div><small>人格认证价</small><strong id="productStickyPrice">¥129</strong></div><button class="primary-btn" id="buyBtn" disabled>正在准备商品…</button></div>
     </section>
 
     <section id="dormPage" class="page">
@@ -177,7 +177,7 @@
         </div>
         <button class="secondary-btn" id="dormRefreshBtn" style="margin-top:10px">刷新宿舍进度</button>
         <div id="dormInviteUrl" class="notice" style="word-break:break-all;margin-top:10px"></div>
-        <div id="dormPreviewWarning" class="dorm-preview-warning" hidden>当前为体验版宿舍数据，后续可能清空，请勿作为长期记录。</div>
+        <div id="dormPreviewWarning" class="dorm-preview-warning" hidden>宿舍挑战记录会保留一段时间，建议及时保存结果。</div>
 
         <div id="dormLock" class="dorm-lock">还差 3 位室友完成测试，4/4 后自动解锁宿舍报告。</div>
         <div id="dormReport" class="dorm-report" hidden>
@@ -196,10 +196,11 @@
 <div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">请确认收货信息无误，支付成功后我们会尽快安排发货。</p></div></div>
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/app.js?v=12"></script>
+<script src="assets/qrcode.min.js?v=1"></script>
+<script src="assets/app.js?v=13"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
 <script src="assets/product-mockup.js?v=2"></script>
-<script src="assets/card-ui.js?v=3"></script>
-<script src="assets/dorm.js?v=2"></script>
+<script src="assets/card-ui.js?v=4"></script>
+<script src="assets/dorm.js?v=3"></script>
 </body>
 </html>
