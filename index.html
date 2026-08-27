@@ -141,7 +141,6 @@
             <div class="product-gallery" id="productGallery"></div>
           </div>
           <div class="product-copy">
-            <div class="debug-tag">客户视觉素材已更新 · 当前为商品预览</div>
             <div class="product-summary"><h2 id="productName"></h2><p id="productIdentityCopy"></p><div class="price"><strong id="productPrice">¥129</strong><span>人格认证价</span><del id="productRegularPrice">日常价 ¥139</del></div></div>
             <div class="selector"><div class="selector-label">颜色</div><div class="chips" id="colorChips"></div></div>
             <div class="selector"><div class="selector-label">尺码</div><div class="chips" id="sizeChips"></div></div>
@@ -178,7 +177,7 @@
         </div>
         <button class="secondary-btn" id="dormRefreshBtn" style="margin-top:10px">刷新宿舍进度</button>
         <div id="dormInviteUrl" class="notice" style="word-break:break-all;margin-top:10px"></div>
-        <div id="dormPreviewWarning" class="dorm-preview-warning" hidden>当前是 Vercel Preview 临时宿舍数据，只用于体验流程；容器重启或扩容时可能失效。正式多人联调会接持久数据库。</div>
+        <div id="dormPreviewWarning" class="dorm-preview-warning" hidden>当前为体验版宿舍数据，后续可能清空，请勿作为长期记录。</div>
 
         <div id="dormLock" class="dorm-lock">还差 3 位室友完成测试，4/4 后自动解锁宿舍报告。</div>
         <div id="dormReport" class="dorm-report" hidden>
@@ -194,10 +193,10 @@
     </section>
   </main>
 </div>
-<div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">支付沿用当前微信 JSAPI / Native 接口，不在 V2 重写支付底座。</p></div></div>
+<div class="modal" id="checkoutModal"><div class="sheet"><h3>确认收货信息</h3><div class="field"><label>收货人</label><input id="receiverName" autocomplete="name"></div><div class="field"><label>手机号</label><input id="receiverPhone" inputmode="tel" autocomplete="tel"></div><div class="field"><label>收货地址</label><input id="receiverAddress" autocomplete="street-address"></div><button class="primary-btn" id="payBtn">确认并支付 ¥129</button><button class="secondary-btn" id="closeCheckoutBtn" style="margin-top:10px">取消</button><p class="notice">请确认收货信息无误，支付成功后我们会尽快安排发货。</p></div></div>
 <div class="modal" id="nativePayModal"><div class="sheet"><h3>微信扫码支付</h3><div id="nativeQr" style="text-align:center;word-break:break-all"></div><button class="secondary-btn" id="closeNativeBtn" style="margin-top:16px">关闭</button></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/app.js?v=11"></script>
+<script src="assets/app.js?v=12"></script>
 <script src="assets/scoring-v1.js?v=1"></script>
 <script src="assets/product-mockup.js?v=2"></script>
 <script src="assets/card-ui.js?v=3"></script>
