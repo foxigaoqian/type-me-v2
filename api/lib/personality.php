@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/analytics.php';
+require_once __DIR__ . '/personality_content.php';
 
 const PERSONALITY_ALGORITHM_VERSION = 'campus-zscore-v1';
 
@@ -27,7 +28,7 @@ function loadPersonalityConfig(): array
 {
     $data = loadV2Config()['personality_config'] ?? null;
     if (!is_array($data)) throw new RuntimeException('config/v2.json personality_config invalid');
-    return $data;
+    return resolvePersonalityContent($data);
 }
 
 function stableTieValue(array $answers, string $key): string

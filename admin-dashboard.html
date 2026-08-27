@@ -14,14 +14,17 @@
     .k{font-size:12px;color:#666;font-weight:700}.v{font-size:30px;font-weight:1000;margin-top:4px}.section{margin:20px 0}.section h2{font-size:21px;margin:0 0 10px}
     .table-wrap{overflow:auto;background:#fff;border:2px solid #111;border-radius:14px}table{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#111;color:#fff;position:sticky;top:0}
     .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:800}.muted{font-size:12px;color:#666}.dorm-section{background:#111;color:#fff;padding:16px;border-radius:18px}.dorm-section h2{color:var(--accent)}.dorm-section .card{background:#1d1d1f;border-color:#f3ff38;box-shadow:3px 3px 0 #f3ff38}.dorm-section .k{color:#aaa}.dorm-section .v{color:#fff}
-    @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}}
+    .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}.btn{min-height:44px;border:2px solid #111;border-radius:10px;background:#111;color:#fff;padding:9px 14px;font-weight:800;cursor:pointer;transition:opacity .2s ease,transform .2s ease}.btn:hover{transform:translateY(-1px)}.btn.alt{background:var(--accent);color:#111}.btn.danger{background:#fff;color:#111}.btn:disabled{opacity:.55;cursor:wait;transform:none}.btn:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #5b5bd6;outline-offset:2px}
+    .product-admin,.personality-admin{background:#fff;border:2px solid #111;border-radius:14px;margin:10px 0;overflow:hidden}.product-admin summary,.personality-admin summary{cursor:pointer;padding:14px;font-weight:900;background:#111;color:#fff}.product-form{display:grid;grid-template-columns:2fr 1fr 1fr auto auto;gap:8px;align-items:end;padding:12px}.field{display:grid;gap:4px;font-size:12px;font-weight:700}.field input,.field textarea{min-height:42px;border:1.5px solid #111;border-radius:8px;padding:10px;width:100%;font:inherit;background:#fff}.field textarea{min-height:92px;resize:vertical;line-height:1.5}.field input[readonly]{background:#eee;color:#555}.check{display:flex;gap:6px;align-items:center;min-height:42px}.sku-wrap{overflow:auto;padding:0 12px 12px}.sku-wrap table{min-width:620px}.sku-wrap input[type=number]{width:92px;min-height:40px;border:1.5px solid #111;border-radius:8px;padding:6px}.notice{padding:10px 12px;background:#fff8cf;border-left:4px solid #111;font-size:13px;margin:10px 0}
+    .personality-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.personality-head-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:#ccc}.personality-body{padding:14px}.personality-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.personality-form .wide{grid-column:1/-1}.metrics-editor{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric-pair{display:grid;grid-template-columns:1fr 70px;gap:6px}.personality-actions{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid #ddd}.personality-actions-right{display:flex;gap:8px}.revision-list{margin:10px 0 0;padding-left:20px;font-size:12px;color:#666}
+    @media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.product-form,.personality-form{grid-template-columns:1fr 1fr}.product-form .name-field,.personality-form .wide{grid-column:1/-1}.metrics-editor{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid{grid-template-columns:1fr}.wrap{padding:12px}.auth{width:100%}.auth input{min-width:0;flex:1}.product-form,.personality-form,.metrics-editor{grid-template-columns:1fr}.product-form .name-field,.personality-form .wide{grid-column:auto}.btn{width:100%}.personality-actions,.personality-actions-right{display:grid;width:100%}.personality-head{align-items:flex-start}.personality-admin summary{padding:12px}}
   </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top">
     <div><h1>TYPE ME · Dashboard</h1><div class="muted">真实数据 · 最近30日为主</div></div>
-    <div class="auth"><input id="token" type="password" autocomplete="off" placeholder="ADMIN_TOKEN"><button id="load">加载数据</button></div>
+    <div class="auth"><input id="token" type="password" autocomplete="off" placeholder="后台密码"><button id="load">加载数据</button></div>
   </div>
   <div id="status" class="muted" style="margin-top:10px"></div>
   <div id="app" hidden>
@@ -35,6 +38,9 @@
     <div class="section"><h2>人格商业价值</h2><div class="table-wrap"><table><thead><tr><th>人格</th><th>测试</th><th>分享率</th><th>商品CTR</th><th>支付率</th><th>支付数</th></tr></thead><tbody id="valueRows"></tbody></table></div></div>
     <div class="section"><h2>渠道价值</h2><div class="table-wrap"><table><thead><tr><th>渠道</th><th>UV</th><th>完成率</th><th>分享率</th><th>商品CTR</th><th>支付率</th></tr></thead><tbody id="channelRows"></tbody></table></div></div>
     <div class="section"><h2>校园来源</h2><div class="table-wrap"><table><thead><tr><th>school_id</th><th>完成测试</th><th>分享率</th><th>支付</th></tr></thead><tbody id="schoolRows"></tbody></table></div></div>
+    <div class="section" id="personalitySection"><div class="toolbar"><div><h2>人格内容管理</h2><div class="muted">共 8 个 TYPE；草稿保存后不会影响线上，点击发布才会生效</div></div><button class="btn alt" id="reloadPersonalities" type="button">刷新人格内容</button></div><div class="notice">TYPE 编号固定不可修改。停用仅关闭数据库文案覆盖并回退到代码默认文案，不改变现有测试计分。</div><div id="personalityStatus" class="muted"></div><div id="personalityList"></div></div>
+    <div class="section" id="catalogSection"><div class="toolbar"><div><h2>商品与库存</h2><div class="muted">价格按元显示；可售库存 = 实物库存 − 已预占</div></div><button class="btn alt" id="reloadCatalog" type="button">刷新商品</button></div><div class="notice">目前 192 个 SKU 库存默认均为 0。正式开放购买前，请按客户库存表填写并保存。</div><div id="catalogStatus" class="muted"></div><div id="catalogList"></div></div>
+    <div class="section" id="orderSection"><div class="toolbar"><div><h2>订单管理</h2><div class="muted">最近 100 条订单，包含支付及退款状态</div></div><button class="btn alt" id="reloadOrders" type="button">刷新订单</button></div><div id="orderStatus" class="muted"></div><div class="table-wrap"><table><thead><tr><th>订单号</th><th>时间</th><th>状态</th><th>金额</th><th>商品</th><th>收件信息</th></tr></thead><tbody id="orderRows"></tbody></table></div></div>
   </div>
 </div>
 <script>
@@ -48,13 +54,13 @@ $('load').onclick=load;
 $('token').addEventListener('keydown',e=>{if(e.key==='Enter')load()});
 async function load(){
   const token=$('token').value.trim();
-  if(!token){$('status').textContent='请输入 ADMIN_TOKEN';return}
+  if(!token){$('status').textContent='请输入后台密码';return}
   $('status').textContent='加载中…';$('app').hidden=true;
   try{
-    const r=await fetch('/api/dashboard/summary.php',{headers:{'X-Admin-Token':token},cache:'no-store',credentials:'same-origin'});
+    const r=await fetch('./api/dashboard/summary.php',{headers:{'X-Admin-Token':token},cache:'no-store',credentials:'same-origin'});
     if(!r.ok){$('status').textContent=`加载失败：HTTP ${r.status}`;return}
     const d=await r.json();
-    $('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;render(d);
+    $('status').textContent=`已更新 · ${new Date().toLocaleString()}`;$('app').hidden=false;render(d);await Promise.all([loadPersonalities(),loadCatalog(),loadOrders()]);
   }catch(e){$('status').textContent='加载失败：网络错误'}
 }
 function render(d){
@@ -79,5 +85,6 @@ function render(d){
   $('schoolRows').innerHTML=(d.school_value||[]).map(x=>`<tr><td>${esc(x.school_id)}</td><td>${num(x.complete)}</td><td>${esc(pct(x.share_rate))}</td><td>${num(x.paid)}</td></tr>`).join('')||'<tr><td colspan="4">暂无 school_id 数据</td></tr>';
 }
 </script>
+<script src="./assets/admin-dashboard-v2.js?v=personality-content-1"></script>
 </body>
 </html>

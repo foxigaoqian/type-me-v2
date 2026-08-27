@@ -143,7 +143,8 @@ function renderIdentityCard(array $primary, array $secondary, array $sample, str
     drawCardText($im,$font,(string)$primary['type'],34,70,275,$accent);
     drawCardText($im,$font,(string)$primary['cn'],86,70,390,$white);
     drawCardText($im,$font,(string)$primary['en'],28,74,445,$muted);
-    $y = drawCardText($im,$font,(string)$primary['core'],42,70,560,$white,16,20);
+    $cardMeme = (string)($primary['identity_card_meme'] ?? $primary['core'] ?? '');
+    $y = drawCardText($im,$font,$cardMeme,42,70,560,$white,16,20);
     $y += 35;
 
     foreach (($primary['metrics'] ?? []) as $metric) {

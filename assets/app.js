@@ -8,7 +8,7 @@ function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');
 async function postJSON(url,data={}){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.message||`HTTP ${r.status}`);return j}
 async function track(eventName,extra={}){try{await postJSON(`${API_BASE}/api/events/track.php`,{event_name:eventName,session_id:state.sessionId,source:state.source,campaign:state.campaign,school_id:state.schoolId,creator_id:state.creatorId,referrer_id:state.referrerId,share_id:state.shareId,primary_personality:state.result?.primary?.key||'',secondary_personality:state.result?.secondary?.key||'',...extra})}catch(e){console.debug('track failed',eventName,e.message)}}
 function assetUrl(path){return path?`${API_BASE}/${String(path).replace(/^\/+/, '')}`:''}
-async function boot(){const cfg=await fetch(`${API_BASE}/config/v2.json`).then(r=>r.json());state.quiz=cfg.quiz;state.personalities=cfg.personality_config;state.products=cfg.product_config;state.media=cfg.media_config||{};renderHomeVisual();renderPreview();bind();await track('landing_view');if(state.shareId){await track('share_open');try{await postJSON(`${API_BASE}/api/share/open-v2.php`,{share_id:state.shareId,referrer_id:state.referrerId,session_id:state.sessionId,source:'share'})}catch(e){}}loadDistribution()}
+async function boot(){const [cfg,dynamic]=await Promise.all([fetch(`${API_BASE}/config/v2.json`,{cache:'no-store'}).then(r=>r.json()),fetch(`${API_BASE}/api/personality/types.php`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)]);state.quiz=cfg.quiz;state.personalities=cfg.personality_config;if(dynamic?.personalities)state.personalities={...state.personalities,personalities:dynamic.personalities};state.products=cfg.product_config;state.media=cfg.media_config||{};renderHomeVisual();renderPreview();bind();await track('landing_view');if(state.shareId){await track('share_open');try{await postJSON(`${API_BASE}/api/share/open-v2.php`,{share_id:state.shareId,referrer_id:state.referrerId,session_id:state.sessionId,source:'share'})}catch(e){}}loadDistribution()}
 function bind(){
   $('startBtn').onclick=startQuiz;
   $('prevBtn').onclick=prevQuestion;
@@ -47,7 +47,7 @@ function stable(key,seed){let h=2166136261;for(const c of`${seed}|${key}`){h^=c.
 function renderResult(){
   const p=state.result.primary,s=state.result.secondary,media=state.media?.personalities?.[p.key]||{};
   document.documentElement.style.setProperty('--accent',p.accent||'#f3ff38');$('resultHero').style.setProperty('--accent',p.accent||'#f3ff38');
-  $('resultType').textContent=p.type;$('resultName').textContent=p.cn;$('resultEn').textContent=p.en;$('resultCore').textContent=p.core;$('resultDescription').textContent=p.description;
+  $('resultType').textContent=p.type;$('resultName').textContent=p.cn;$('resultEn').textContent=p.en;$('resultCore').textContent=p.main_meme||p.core;$('resultDescription').textContent=p.description;
   $('resultVisual').src=assetUrl(media.main);$('resultVisual').alt=media.alt||`${p.type} ${p.cn}校园穿搭视觉`;
   $('cardVisual').src=assetUrl(media.main);
   $('resultGallery').innerHTML=[['日常穿搭',media.front,'story-lead'],['背面设计',media.back,'story-support'],['校园场景',media.scene,'story-support']].filter(x=>x[1]).map(([label,src,kind])=>`<figure class="${kind}"><img src="${assetUrl(src)}" alt="${p.type} ${p.cn}${label}" width="1200" height="1500" loading="lazy"><figcaption>${label}</figcaption></figure>`).join('');
@@ -55,11 +55,12 @@ function renderResult(){
   $('metrics').innerHTML=(p.metrics||[]).map(m=>`<div class="metric"><div class="metric-top"><span>${m.name}</span><span>${m.value}%</span></div><div class="metric-bar"><span style="width:${m.value}%"></span></div></div>`).join('');
   $('secondaryType').textContent=s.type;$('secondaryName').textContent=s.cn;$('secondaryCore').textContent=s.core;$('skillText').textContent=p.skill;$('weaknessText').textContent=p.weakness;
   const sample=state.result.sample||{};if((sample.total||0)>=100&&sample.percent!==null){$('populationStat').textContent=`${sample.percent}%`;$('populationNote').textContent=`当前已完成测试用户中，${p.cn}占比。`}else{$('populationStat').textContent='样本正在积累中';$('populationNote').textContent='完成样本不足 100 时不展示比例。'}
-  $('cardType').textContent=p.type;$('cardName').textContent=p.cn;$('cardEn').textContent=p.en;$('cardCore').textContent=p.core;
+  $('cardType').textContent=p.type;$('cardName').textContent=p.cn;$('cardEn').textContent=p.en;$('cardCore').textContent=p.identity_card_meme||p.core;
   const generatedCard=$('generatedCardWrap');if(generatedCard)generatedCard.remove();
   document.querySelector('.identity-section')?.classList.remove('has-generated-card');
   $('cardStatus').textContent='二维码会绑定本次分享归因。';
-  $('productTeaserVisual').src=assetUrl(media.front||media.main);$('productTeaserVisual').alt=`${p.type} ${p.cn} T 恤视觉`;$('productTeaserName').textContent=`${p.type} ${p.cn} T 恤`;
+  $('friendShareCopy').textContent=p.friend_meme||'让朋友继续测试';
+  $('productTeaserVisual').src=assetUrl(media.front||media.main);$('productTeaserVisual').alt=`${p.type} ${p.cn} T 恤视觉`;$('productTeaserName').textContent=`${p.type} ${p.cn} T 恤`;$('tshirtTeaserCopy').textContent=p.tshirt_copy||p.core;
   renderProduct()
 }
 function renderProduct(){
@@ -68,7 +69,7 @@ function renderProduct(){
   const displayColor=product?.display_color||availableColors[0]||'';
   const colors=state.products.sales_enabled?availableColors:[displayColor].filter(Boolean);if(!colors.includes(state.color))state.color=colors[0]||'';
   const sizes=(state.products.sizes||[]).filter(size=>Number(product?.stock_by_size?.[size]||0)>0);if(!sizes.includes(state.size))state.size=sizes[0]||'';
-  $('productName').textContent=product?.name||`${p.type} · ${p.cn}人格 T 恤`;
+  $('productName').textContent=product?.name||`${p.type} · ${p.cn}人格 T 恤`;$('productIdentityCopy').textContent=p.tshirt_copy||p.core;
   const colorHex={'黑':'#111111','白':'#ffffff','灰':'#a9a9a9'};
   $('colorChips').innerHTML=colors.map(c=>`<button class="chip color-chip ${c===state.color?'active':''}" data-v="${c}" aria-pressed="${c===state.color}"><span class="color-dot" style="--chip-color:${colorHex[c]||'#dddddd'}"></span><span>${c}</span></button>`).join('');
   $('sizeChips').innerHTML=sizes.map(s=>`<button class="chip size-chip ${s===state.size?'active':''}" data-v="${s}" aria-pressed="${s===state.size}" aria-label="${labels[s]||s}，库存 ${product.stock_by_size[s]} 件">${labels[s]||s}</button>`).join('');
@@ -88,8 +89,8 @@ function renderProduct(){
   [...$('sizeChips').children].forEach(b=>b.onclick=()=>{state.size=b.dataset.v;renderProduct();track('size_select',{product_id:product.product_id,size:state.size})});
 }
 async function generateIdentityCard(){await track('identity_card_generate');$('cardStatus').textContent='身份证内容已生成。PNG 服务端渲染待服务器图像扩展确认后接入；当前不会伪装成已生成图片。';toast('人格身份证内容已生成')}
-async function shareResult(){await track('share_click');try{const d=await postJSON(`${API_BASE}/api/share/create-v2.php`,{session_id:state.sessionId,primary_personality:state.result.primary.key,secondary_personality:state.result.secondary.key});const link=d.share_url;state.shareId=d.share_id||state.shareId;await configureWechatShare(link);if(navigator.share)await navigator.share({title:`TYPE ME｜我是${state.result.primary.cn}`,text:state.result.primary.core,url:link});else if(navigator.clipboard){await navigator.clipboard.writeText(link);toast('分享链接已复制')}else prompt('复制这个链接分享给朋友',link)}catch(e){toast(`分享链接生成失败：${e.message}`)}}
-async function configureWechatShare(link){if(!/MicroMessenger/i.test(navigator.userAgent)||typeof wx==='undefined')return;try{const r=await fetch(`${API_BASE}/api/wechat/jssdk-sign.php?url=${encodeURIComponent(location.href.split('#')[0])}`),d=await r.json();if(d.code!==0)return;wx.config({debug:false,appId:d.appId,timestamp:d.timestamp,nonceStr:d.nonceStr,signature:d.signature,jsApiList:['updateAppMessageShareData','updateTimelineShareData']});wx.ready(()=>{const shareData={title:`TYPE ME｜我是${state.result.primary.cn}`,desc:state.result.primary.core,link,imgUrl:`${API_BASE}/share-cover.jpg`};wx.updateAppMessageShareData(shareData);wx.updateTimelineShareData(shareData)})}catch(e){}}
+async function shareResult(){await track('share_click');try{const p=state.result.primary,d=await postJSON(`${API_BASE}/api/share/create-v2.php`,{session_id:state.sessionId,primary_personality:p.key,secondary_personality:state.result.secondary.key});const link=d.share_url;state.shareId=d.share_id||state.shareId;await configureWechatShare(link);if(navigator.share)await navigator.share({title:`TYPE ME｜我是${p.cn}`,text:p.share_copy||p.core,url:link});else if(navigator.clipboard){await navigator.clipboard.writeText(link);toast('分享链接已复制')}else prompt('复制这个链接分享给朋友',link)}catch(e){toast(`分享链接生成失败：${e.message}`)}}
+async function configureWechatShare(link){if(!/MicroMessenger/i.test(navigator.userAgent)||typeof wx==='undefined')return;try{const r=await fetch(`${API_BASE}/api/wechat/jssdk-sign.php?url=${encodeURIComponent(location.href.split('#')[0])}`),d=await r.json();if(d.code!==0)return;wx.config({debug:false,appId:d.appId,timestamp:d.timestamp,nonceStr:d.nonceStr,signature:d.signature,jsApiList:['updateAppMessageShareData','updateTimelineShareData']});wx.ready(()=>{const p=state.result.primary,shareData={title:`TYPE ME｜我是${p.cn}`,desc:p.share_copy||p.core,link,imgUrl:`${API_BASE}/share-cover.jpg`};wx.updateAppMessageShareData(shareData);wx.updateTimelineShareData(shareData)})}catch(e){}}
 function openCheckout(){if(!state.products.sales_enabled){toast(state.products.sales_status||'暂未开放购买');return}const product=state.products.products[state.result.primary.key];track('add_cart',{product_id:product.product_id,sku_id:`${product.product_id}-${state.color}-${state.size}`});$('checkoutModal').classList.add('open')}
 function isWechat(){return/MicroMessenger/i.test(navigator.userAgent)}
 function getCookie(name){return document.cookie.split('; ').find(x=>x.startsWith(name+'='))?.split('=').slice(1).join('=')||''}
