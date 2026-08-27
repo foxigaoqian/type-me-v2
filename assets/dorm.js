@@ -43,7 +43,7 @@ async function createDorm(){
     dormState.current=d.dorm;dormState.inviteCode=d.dorm.invite_code;
     localStorage.setItem('type_me_last_dorm',d.dorm.invite_code);
     renderDorm(d.dorm);showPage('dorm');startDormPolling();toast('宿舍已创建，拉 3 个室友来测');
-  }catch(e){toast(e.message)}finally{btn.disabled=false;btn.textContent=old}
+  }catch(e){console.error('create dorm failed',e);toast('宿舍创建暂未完成，请稍后重试')}finally{btn.disabled=false;btn.textContent=old}
 }
 
 async function joinInvitedDorm(){
@@ -60,13 +60,13 @@ async function joinInvitedDorm(){
     if(box){box.innerHTML=`<b>已加入 ${escapeDormHtml(d.dorm.name)}</b><br>${d.dorm.member_count}/4 位已完成。${d.dorm.status==='COMPLETE'?'宿舍报告已解锁。':'还差 '+(4-d.dorm.member_count)+' 位室友。'}`}
     if($('viewDormBtn'))$('viewDormBtn').hidden=false;
     toast(d.dorm.status==='COMPLETE'?'4/4 完成，宿舍报告已解锁':'已加入宿舍挑战');
-  }catch(e){if(box){box.hidden=false;box.textContent=`加入宿舍失败：${e.message}`}throw e}
+  }catch(e){console.error('join dorm failed',e);if(box){box.hidden=false;box.textContent='加入宿舍暂未完成，请稍后重试'}throw e}
 }
 
 async function openDorm(code){
   code=(code||localStorage.getItem('type_me_last_dorm')||'').toUpperCase();
   if(!code){toast('还没有宿舍挑战');return}
-  try{const d=await loadDormStatus(code,true);renderDorm(d);showPage('dorm');startDormPolling()}catch(e){toast(e.message)}
+  try{const d=await loadDormStatus(code,true);renderDorm(d);showPage('dorm');startDormPolling()}catch(e){console.error('open dorm failed',e);toast('宿舍信息暂时无法打开，请稍后重试')}
 }
 
 async function loadDormStatus(code,render=true){
@@ -128,11 +128,11 @@ async function generateDormDoorplate(){
     const r=await postJSON(`${API_BASE}/api/dorm/card.php`,{invite_code:d.invite_code});
     const oldWrap=$('dormCardWrap');if(oldWrap)oldWrap.remove();
     const wrap=document.createElement('div');wrap.id='dormCardWrap';wrap.className='dorm-card-preview';
-    wrap.innerHTML=`<img src="${r.card_url}" alt="TYPE ME 宿舍人格门牌"><a id="saveDormCard" class="secondary-btn" style="display:block;text-align:center;text-decoration:none;margin-top:10px" href="${r.card_url}" download="type-me-dorm-${d.invite_code}.png">保存宿舍人格门牌 PNG</a>`;
+    wrap.innerHTML=`<img src="${r.card_url}" alt="TYPE ME 宿舍人格门牌"><a id="saveDormCard" class="secondary-btn" style="display:block;text-align:center;text-decoration:none;margin-top:10px" href="${r.card_url}" download="type-me-dorm-${d.invite_code}.png">保存宿舍人格门牌</a>`;
     $('dormDoorplateBtn').insertAdjacentElement('afterend',wrap);$('saveDormCard').onclick=()=>track('dorm_doorplate_save',{dorm_id:d.dorm_id,dorm_code:d.invite_code,dorm_member_count:d.member_count});toast('宿舍人格门牌已生成');
-  }catch(e){toast(e.message)}finally{btn.disabled=false;btn.textContent=old}
+  }catch(e){console.error('dorm doorplate failed',e);toast('门牌生成暂未完成，请稍后重试')}finally{btn.disabled=false;btn.textContent=old}
 }
 
-function escapeDormHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function escapeDormHtml(v){return String(v??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]))}
 
 setTimeout(dormInit,0);
