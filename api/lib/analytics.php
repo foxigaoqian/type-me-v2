@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/wechat_pay.php';
 require_once __DIR__ . '/db_analytics.php';
+require_once __DIR__ . '/analytics_dashboard.php';
 
 function analyticsStoragePath(string $name): string
 {
@@ -84,6 +85,7 @@ function trackEvent(string $eventName, array $payload = []): array
         'timestamp' => date('c'),
         'source' => cleanEventField($payload['source'] ?? 'direct') ?: 'direct',
         'campaign' => cleanEventField($payload['campaign'] ?? ''),
+        'seed_id' => analyticsDimension($payload['seed_id'] ?? '', 64),
         'school_id' => cleanEventField($payload['school_id'] ?? ''),
         'creator_id' => cleanEventField($payload['creator_id'] ?? ''),
         'referrer_id' => cleanEventField($payload['referrer_id'] ?? ''),
@@ -94,7 +96,7 @@ function trackEvent(string $eventName, array $payload = []): array
         'sku_id' => cleanEventField($payload['sku_id'] ?? ''),
         'order_id' => cleanEventField($payload['order_id'] ?? ''),
     ];
-    foreach (['attempt_id','question_id','question_index','answer_index','color','size','dorm_id','dorm_code','dorm_member_count'] as $extra) {
+    foreach (['attempt_id','question_id','question_index','answer_index','color','size','dorm_id','dorm_code','dorm_member_count','seed_generation'] as $extra) {
         if (array_key_exists($extra, $payload)) $row[$extra] = $payload[$extra];
     }
 

@@ -26,6 +26,7 @@ try {
       'attempt_id'=>$attemptId,'uid'=>$uid,
       'session_id'=>(string)($body['session_id']??''),'completed_at'=>date('c'),
       'source'=>(string)($body['source']??'direct'),'campaign'=>(string)($body['campaign']??''),
+      'seed_id'=>analyticsDimension($body['seed_id']??'',64),
       'school_id'=>(string)($body['school_id']??''),'creator_id'=>(string)($body['creator_id']??''),
       'referrer_id'=>(string)($body['referrer_id']??''),'share_id'=>(string)($body['share_id']??''),
       'primary_personality'=>$result['primary']['key'],'secondary_personality'=>$result['secondary']['key'],

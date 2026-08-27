@@ -49,6 +49,9 @@ $receiverPhone = trim((string)($body['receiver_phone'] ?? ''));
 $receiverAddress = trim((string)($body['receiver_address'] ?? ''));
 $designType = trim((string)($body['design_type'] ?? ''));
 $quizResult = trim((string)($body['quiz_result'] ?? ''));
+$source = trim((string)($body['source'] ?? 'direct'));
+$campaign = trim((string)($body['campaign'] ?? ''));
+$seedId = trim((string)($body['seed_id'] ?? ''));
 
 if ($amount !== 12900 || $description === '') jsonResponse(['code'=>-1,'message'=>'V2 当前仅允许人格认证价 ¥129'],400);
 if ($receiverName === '' || $receiverPhone === '' || $receiverAddress === '') jsonResponse(['code'=>-1,'message'=>'收货信息不完整'],400);
@@ -67,6 +70,7 @@ $baseOrder = [
     'uid'=>$uid,'out_trade_no'=>$outTradeNo,'amount'=>$amount,'description'=>(string)$items[0]['name'],'items'=>$items,
     'receiver_name'=>$receiverName,'receiver_phone'=>$receiverPhone,'receiver_address'=>$receiverAddress,
     'design_type'=>$designType,'quiz_result'=>$quizResult,'primary_personality'=>$primaryPersonality,
+    'source'=>$source,'campaign'=>$campaign,'seed_id'=>$seedId,
     'status'=>'PENDING_PAYMENT','amount_origin_fen'=>$amount,'discount_fen'=>0,'amount_pay_fen'=>$amount,'created_at'=>date('c')
 ];
 

@@ -64,6 +64,8 @@ function getConfig(): array
         'refund_notify_url' => $get('REFUND_NOTIFY_URL') ?: $get('NOTIFY_URL'),
         'admin_token' => $get('ADMIN_TOKEN'),
         'platform_cert_path' => $get('WECHAT_PLATFORM_CERT_PATH'),
+        'wechat_pay_public_key_id' => $get('WECHAT_PAY_PUBLIC_KEY_ID'),
+        'wechat_pay_public_key_path' => $get('WECHAT_PAY_PUBLIC_KEY_PATH'),
         'card_font_path' => $get('CARD_FONT_PATH'),
         'qr_api_url' => $get('QR_API_URL') ?: 'https://api.qrserver.com/v1/create-qr-code/',
         'app_base_url' => rtrim(trim($get('APP_BASE_URL')), '/'),

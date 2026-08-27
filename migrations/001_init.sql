@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS test_attempts (
   session_id VARCHAR(64) NOT NULL DEFAULT '',
   source VARCHAR(64) NOT NULL DEFAULT 'direct',
   campaign VARCHAR(128) NOT NULL DEFAULT '',
+  seed_id VARCHAR(64) NOT NULL DEFAULT '',
   school_id VARCHAR(128) NOT NULL DEFAULT '',
   creator_id VARCHAR(128) NOT NULL DEFAULT '',
   referrer_id VARCHAR(64) NOT NULL DEFAULT '',
@@ -14,7 +15,8 @@ CREATE TABLE IF NOT EXISTS test_attempts (
   started_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   completed_at DATETIME(3) NULL,
   INDEX idx_attempt_uid (uid),
-  INDEX idx_attempt_source (source, started_at)
+  INDEX idx_attempt_source (source, started_at),
+  INDEX idx_attempt_seed (seed_id, started_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS test_answers (
@@ -48,6 +50,7 @@ CREATE TABLE IF NOT EXISTS events (
   occurred_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   source VARCHAR(64) NOT NULL DEFAULT 'direct',
   campaign VARCHAR(128) NOT NULL DEFAULT '',
+  seed_id VARCHAR(64) NOT NULL DEFAULT '',
   school_id VARCHAR(128) NOT NULL DEFAULT '',
   creator_id VARCHAR(128) NOT NULL DEFAULT '',
   referrer_id VARCHAR(64) NOT NULL DEFAULT '',
@@ -60,6 +63,7 @@ CREATE TABLE IF NOT EXISTS events (
   metadata_json LONGTEXT NULL,
   INDEX idx_event_name_time (event_name, occurred_at),
   INDEX idx_event_source_time (source, occurred_at),
+  INDEX idx_event_seed_time (seed_id, occurred_at),
   INDEX idx_event_session (session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -71,8 +75,11 @@ CREATE TABLE IF NOT EXISTS shares (
   secondary_personality VARCHAR(32) NOT NULL DEFAULT '',
   share_url VARCHAR(1024) NOT NULL,
   source VARCHAR(32) NOT NULL DEFAULT 'result',
+  campaign VARCHAR(128) NOT NULL DEFAULT '',
+  seed_id VARCHAR(64) NOT NULL DEFAULT '',
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  INDEX idx_share_referrer (referrer_id, created_at)
+  INDEX idx_share_referrer (referrer_id, created_at),
+  INDEX idx_share_seed (seed_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS products (
@@ -110,12 +117,16 @@ CREATE TABLE IF NOT EXISTS orders (
   receiver_address VARCHAR(512) NOT NULL DEFAULT '',
   quiz_result VARCHAR(255) NOT NULL DEFAULT '',
   primary_personality VARCHAR(32) NOT NULL DEFAULT '',
+  source VARCHAR(64) NOT NULL DEFAULT 'direct',
+  campaign VARCHAR(128) NOT NULL DEFAULT '',
+  seed_id VARCHAR(64) NOT NULL DEFAULT '',
   transaction_id VARCHAR(128) NULL UNIQUE,
   created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   paid_at DATETIME(3) NULL,
   updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   INDEX idx_order_uid (uid, created_at),
-  INDEX idx_order_status (status, created_at)
+  INDEX idx_order_status (status, created_at),
+  INDEX idx_order_seed (seed_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS order_items (

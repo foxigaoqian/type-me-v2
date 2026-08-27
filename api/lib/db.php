@@ -33,11 +33,12 @@ function dbCreateReservedOrder(array $order): void
 
     $pdo->beginTransaction();
     try {
-        $stmt = $pdo->prepare('INSERT INTO orders (out_trade_no,uid,status,channel,amount_fen,receiver_name,receiver_phone,receiver_address,quiz_result,primary_personality) VALUES (?,?,?,?,?,?,?,?,?,?)');
+        $stmt = $pdo->prepare('INSERT INTO orders (out_trade_no,uid,status,channel,amount_fen,receiver_name,receiver_phone,receiver_address,quiz_result,primary_personality,source,campaign,seed_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
         $stmt->execute([
             $order['out_trade_no'],$order['uid'],'PENDING_PAYMENT',(string)($order['channel'] ?? ''),(int)$order['amount'],
             (string)($order['receiver_name'] ?? ''),(string)($order['receiver_phone'] ?? ''),(string)($order['receiver_address'] ?? ''),
-            (string)($order['quiz_result'] ?? ''),(string)($order['primary_personality'] ?? '')
+            (string)($order['quiz_result'] ?? ''),(string)($order['primary_personality'] ?? ''),
+            (string)($order['source'] ?? 'direct'),(string)($order['campaign'] ?? ''),(string)($order['seed_id'] ?? '')
         ]);
 
         $lockSku = $pdo->prepare('SELECT stock_on_hand,stock_reserved,active FROM skus WHERE sku_id=? FOR UPDATE');

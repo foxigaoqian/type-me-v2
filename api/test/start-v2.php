@@ -11,6 +11,7 @@ $row = [
     'started_at'=>date('c'),
     'source'=>(string)($body['source']??'direct'),
     'campaign'=>(string)($body['campaign']??''),
+    'seed_id'=>analyticsDimension($body['seed_id']??'',64),
     'school_id'=>(string)($body['school_id']??''),
     'creator_id'=>(string)($body['creator_id']??''),
     'referrer_id'=>(string)($body['referrer_id']??''),
