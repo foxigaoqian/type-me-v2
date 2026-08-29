@@ -91,12 +91,18 @@ function wechatRequest(string $method, string $urlPathWithQuery, array $payload 
     return ['success' => false, 'http_code' => $httpCode, 'error' => is_array($decoded) ? $decoded : ['raw' => $resp]];
 }
 
+function wechatOrderExpireAt(): string
+{
+    $minutes = (int)(getConfig()['order_reservation_ttl_minutes'] ?? 30);
+    return (new DateTimeImmutable('now'))->modify('+' . $minutes . ' minutes')->format(DATE_RFC3339);
+}
+
 function createJsapiOrder(string $description, string $outTradeNo, int $totalFen, string $openid): array
 {
     $config = getConfig();
     return wechatRequest('POST', '/v3/pay/transactions/jsapi', [
         'appid' => $config['appid'], 'mchid' => $config['mchid'], 'description' => $description,
-        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'],
+        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'], 'time_expire' => wechatOrderExpireAt(),
         'amount' => ['total' => $totalFen, 'currency' => 'CNY'], 'payer' => ['openid' => $openid],
     ]);
 }
@@ -106,7 +112,7 @@ function createNativeOrder(string $description, string $outTradeNo, int $totalFe
     $config = getConfig();
     return wechatRequest('POST', '/v3/pay/transactions/native', [
         'appid' => $config['appid'], 'mchid' => $config['mchid'], 'description' => $description,
-        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'],
+        'out_trade_no' => $outTradeNo, 'notify_url' => $config['notify_url'], 'time_expire' => wechatOrderExpireAt(),
         'amount' => ['total' => $totalFen, 'currency' => 'CNY'],
     ]);
 }
@@ -115,6 +121,14 @@ function queryOrderByOutTradeNo(string $outTradeNo): array
 {
     $config = getConfig();
     return wechatRequest('GET', '/v3/pay/transactions/out-trade-no/' . rawurlencode($outTradeNo) . '?mchid=' . rawurlencode($config['mchid']));
+}
+
+function closeWechatOrder(string $outTradeNo): array
+{
+    $config = getConfig();
+    return wechatRequest('POST', '/v3/pay/transactions/out-trade-no/' . rawurlencode($outTradeNo) . '/close', [
+        'mchid' => $config['mchid'],
+    ]);
 }
 
 function createRefund(string $outTradeNo, string $outRefundNo, int $refundFen, int $totalFen, string $reason = '用户申请退款'): array
@@ -145,21 +159,25 @@ function resolvePlatformCertPath(string $path): string
     return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . ltrim($path, '/\\');
 }
 
-function verifyWechatPayCallbackSignature(string $rawBody): void
+function callbackVerificationKey(string $serial, array $config): string
 {
-    $timestamp = trim((string)($_SERVER['HTTP_WECHATPAY_TIMESTAMP'] ?? ''));
-    $nonce = trim((string)($_SERVER['HTTP_WECHATPAY_NONCE'] ?? ''));
-    $signature = trim((string)($_SERVER['HTTP_WECHATPAY_SIGNATURE'] ?? ''));
-    $serial = strtoupper(ltrim(trim((string)($_SERVER['HTTP_WECHATPAY_SERIAL'] ?? '')), '0'));
+    if (str_starts_with($serial, 'PUB_KEY_ID_')) {
+        $configuredId = trim((string)($config['wechat_pay_public_key_id'] ?? ''));
+        if ($configuredId === '' || !hash_equals($configuredId, $serial)) {
+            throw new RuntimeException('微信支付回调公钥ID不匹配');
+        }
 
-    if ($timestamp === '' || $nonce === '' || $signature === '' || $serial === '') {
-        throw new RuntimeException('微信支付回调验签头缺失');
-    }
-    if (!ctype_digit($timestamp) || abs(time() - (int)$timestamp) > 300) {
-        throw new RuntimeException('微信支付回调时间戳无效或已过期');
+        $publicKeyPath = resolvePlatformCertPath((string)($config['wechat_pay_public_key_path'] ?? ''));
+        if (!is_file($publicKeyPath)) throw new RuntimeException('微信支付公钥文件不存在');
+        $publicKeyPem = file_get_contents($publicKeyPath);
+        if ($publicKeyPem === false || $publicKeyPem === '') throw new RuntimeException('读取微信支付公钥失败');
+        if (openssl_pkey_get_public($publicKeyPem) === false) {
+            throw new RuntimeException('微信支付公钥格式无效');
+        }
+        return $publicKeyPem;
     }
 
-    $certPath = resolvePlatformCertPath((string)(getConfig()['platform_cert_path'] ?? ''));
+    $certPath = resolvePlatformCertPath((string)($config['platform_cert_path'] ?? ''));
     if (!is_file($certPath)) throw new RuntimeException('微信支付平台证书不存在');
     $certPem = file_get_contents($certPath);
     if ($certPem === false || $certPem === '') throw new RuntimeException('读取微信支付平台证书失败');
@@ -168,14 +186,33 @@ function verifyWechatPayCallbackSignature(string $rawBody): void
     if ($cert === false) throw new RuntimeException('微信支付平台证书格式无效');
     $certInfo = openssl_x509_parse($cert);
     $certSerial = strtoupper(ltrim((string)($certInfo['serialNumberHex'] ?? ''), '0'));
-    if ($certSerial !== '' && $serial !== $certSerial) {
+    $normalizedSerial = strtoupper(ltrim($serial, '0'));
+    if ($certSerial !== '' && $normalizedSerial !== $certSerial) {
         throw new RuntimeException('微信支付回调证书序列号不匹配');
     }
+    return $certPem;
+}
+
+function verifyWechatPayCallbackSignature(string $rawBody): void
+{
+    $timestamp = trim((string)($_SERVER['HTTP_WECHATPAY_TIMESTAMP'] ?? ''));
+    $nonce = trim((string)($_SERVER['HTTP_WECHATPAY_NONCE'] ?? ''));
+    $signature = trim((string)($_SERVER['HTTP_WECHATPAY_SIGNATURE'] ?? ''));
+    $serial = trim((string)($_SERVER['HTTP_WECHATPAY_SERIAL'] ?? ''));
+
+    if ($timestamp === '' || $nonce === '' || $signature === '' || $serial === '') {
+        throw new RuntimeException('微信支付回调验签头缺失');
+    }
+    if (!ctype_digit($timestamp) || abs(time() - (int)$timestamp) > 300) {
+        throw new RuntimeException('微信支付回调时间戳无效或已过期');
+    }
+
+    $verificationKey = callbackVerificationKey($serial, getConfig());
 
     $decodedSignature = base64_decode($signature, true);
     if ($decodedSignature === false) throw new RuntimeException('微信支付回调签名格式无效');
     $message = $timestamp . "\n" . $nonce . "\n" . $rawBody . "\n";
-    $verify = openssl_verify($message, $decodedSignature, $certPem, OPENSSL_ALGO_SHA256);
+    $verify = openssl_verify($message, $decodedSignature, $verificationKey, OPENSSL_ALGO_SHA256);
     if ($verify !== 1) throw new RuntimeException('微信支付回调签名校验失败');
 }
 

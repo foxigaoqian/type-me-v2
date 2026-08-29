@@ -8,6 +8,7 @@ if($shareId==='') jsonResponse(['code'=>-1,'message'=>'缺少share_id'],400);
 appendNdjson(analyticsStoragePath('share-opens-v2.ndjson'),[
   'share_id'=>$shareId,'referrer_id'=>(string)($body['referrer_id']??''),
   'visitor_id'=>getCurrentUserId(),'session_id'=>(string)($body['session_id']??''),
-  'source'=>(string)($body['source']??'share'),'opened_at'=>date('c')
+  'source'=>(string)($body['source']??'share'),'campaign'=>analyticsDimension($body['campaign']??'',128),
+  'seed_id'=>analyticsDimension($body['seed_id']??'',64),'opened_at'=>date('c')
 ]);
 jsonResponse(['code'=>0]);

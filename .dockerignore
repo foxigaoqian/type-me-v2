@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+!.env.example
+.DS_Store
+node_modules
+npm-debug.log*
+*.log
+
+certs/*.pem
+certs/*.key
+storage/*.json
+storage/*.ndjson
+storage/*.lock
+storage/cards/*.png

@@ -7,6 +7,7 @@ certs/*.key
 storage/*.json
 storage/*.ndjson
 storage/*.lock
+storage/cards/*.png
 
 .claude/
 .DS_Store

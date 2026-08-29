@@ -20,22 +20,46 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: curl, openssl
+          extensions: curl, openssl, pdo_mysql, mbstring
           coverage: none
 
       - name: Validate PHP syntax
-        run: find api -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+        shell: bash
+        run: |
+          set -euo pipefail
+          find api scripts tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Run personality scoring guardrail
+        run: php tests/personality_distribution.php
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Validate JavaScript syntax
-        run: node --check assets/app.js
+        shell: bash
+        run: |
+          set -euo pipefail
+          find assets -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 
-      - name: Validate V2 JSON config
-        run: python3 -m json.tool config/v2.json >/dev/null
+      - name: Validate JSON config
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m json.tool config/v2.json >/dev/null
+          python3 -m json.tool config/algorithm-v1.json >/dev/null
+
+      - name: Check Vercel container files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s Dockerfile.vercel
+          test -s Caddyfile
+          test -s .dockerignore
+          test -s vercel.json
+          grep -q 'PORT' Caddyfile
+          grep -q 'api/config.php' Caddyfile
 
       - name: Check secret files are not tracked
         shell: bash
@@ -47,3 +71,142 @@ jobs:
             echo "$bad"
             exit 1
           fi
+
+  inventory-smoke:
+    needs: validate
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: roottest
+          MYSQL_DATABASE: type_me_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proottest"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring
+          coverage: none
+
+      - name: Install MySQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq default-mysql-client
+
+      - name: Apply production migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/001_init.sql
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/002_seed_personality_products.sql
+          mysql --protocol=TCP -h127.0.0.1 -P3306 -uroot -proottest type_me_test < migrations/003_dorm_mvp.sql
+          count=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e 'SELECT COUNT(*) FROM skus')
+          test "$count" = "192"
+          dorm_tables=$(mysql --protocol=TCP -N -B -h127.0.0.1 -P3306 -uroot -proottest type_me_test -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='type_me_test' AND table_name IN ('dorms','dorm_members')")
+          test "$dorm_tables" = "2"
+
+      - name: Run transactional inventory smoke test
+        env:
+          DB_DSN: mysql:host=127.0.0.1;port=3306;dbname=type_me_test;charset=utf8mb4
+          DB_USER: root
+          DB_PASS: roottest
+        run: php tests/inventory_smoke.php
+
+      - name: Run four-member dorm MVP smoke test
+        env:
+          DB_DSN: mysql:host=127.0.0.1;port=3306;dbname=type_me_test;charset=utf8mb4
+          DB_USER: root
+          DB_PASS: roottest
+        run: php tests/dorm_smoke.php
+
+  container-smoke:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Vercel FrankenPHP image
+        run: docker build -f Dockerfile.vercel -t type-me-v2-vercel .
+
+      - name: Boot preview container and verify health + dorm API
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup() { docker rm -f type-me-v2-ci >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+
+          docker run -d \
+            --name type-me-v2-ci \
+            -e PORT=3000 \
+            -e VERCEL=1 \
+            -e VERCEL_ENV=preview \
+            -p 3000:3000 \
+            type-me-v2-vercel
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health.php > /tmp/health.json; then
+              break
+            fi
+            sleep 1
+          done
+
+          cat /tmp/health.json
+          python3 - <<'PY'
+          import json
+          with open('/tmp/health.json', encoding='utf-8') as f:
+              data = json.load(f)
+          assert data['ok'] is True, data
+          assert data['runtime'] == 'vercel-container', data
+          assert data['environment'] == 'preview', data
+          assert data['preview_mode'] is True, data
+          for key in ['curl','openssl','pdo_mysql','gd','freetype','mbstring','font']:
+              assert data['checks'][key] is True, (key, data)
+          PY
+
+          status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/api/config.php)
+          test "$status" = "404"
+
+          curl --fail --silent \
+            -H 'Content-Type: application/json' \
+            -d '{"attempt_id":"preview-a1","primary_personality":"periodic","secondary_personality":"awake","name":"CI Dorm"}' \
+            http://127.0.0.1:3000/api/dorm/create.php > /tmp/dorm-create.json
+
+          code=$(python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/dorm-create.json',encoding='utf-8'))
+          assert d['code']==0, d
+          assert d['dorm']['member_count']==1, d
+          assert d['dorm']['status']=='OPEN', d
+          print(d['dorm']['invite_code'])
+          PY
+          )
+
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a2\",\"primary_personality\":\"night\",\"secondary_personality\":\"zuiying\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-2.json
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a3\",\"primary_personality\":\"crazy\",\"secondary_personality\":\"suiyuan\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-3.json
+          curl --fail --silent -H 'Content-Type: application/json' -d "{\"invite_code\":\"$code\",\"attempt_id\":\"preview-a4\",\"primary_personality\":\"boundary\",\"secondary_personality\":\"rebellious\"}" http://127.0.0.1:3000/api/dorm/join.php >/tmp/dorm-4.json
+          curl --fail --silent "http://127.0.0.1:3000/api/dorm/status.php?code=$code" >/tmp/dorm-status.json
+
+          python3 - <<'PY'
+          import json
+          d=json.load(open('/tmp/dorm-status.json',encoding='utf-8'))
+          assert d['code']==0, d
+          dorm=d['dorm']
+          assert dorm['member_count']==4, dorm
+          assert dorm['status']=='COMPLETE', dorm
+          assert dorm['report']['version']=='dorm-report-v1', dorm
+          assert len(dorm['report']['metrics'])==4, dorm
+          assert len(dorm['report']['roles'])==4, dorm
+          print('Preview dorm HTTP smoke passed:', dorm['invite_code'])
+          PY

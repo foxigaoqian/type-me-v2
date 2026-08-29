@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 require_once dirname(__DIR__) . '/lib/wechat_pay.php';
+require_once dirname(__DIR__) . '/lib/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonResponse(['code'=>-1,'message'=>'Method Not Allowed'],405);
 $body = readJsonBody();
@@ -11,6 +12,11 @@ if ($outTradeNo === '') jsonResponse(['code'=>-1,'message'=>'缺少out_trade_no'
 $orders = readOrders();
 if (!isset($orders[$outTradeNo])) jsonResponse(['code'=>-1,'message'=>'订单不存在'],404);
 $order = $orders[$outTradeNo];
+$currentUid = getCurrentUserId();
+$expectedAdmin = (string)(getConfig()['admin_token'] ?? '');
+$providedAdmin = trim((string)($_SERVER['HTTP_X_ADMIN_TOKEN'] ?? ''));
+$isAdmin = $expectedAdmin !== '' && $providedAdmin !== '' && hash_equals($expectedAdmin,$providedAdmin);
+if ((string)($order['uid'] ?? '') !== $currentUid && !$isAdmin) jsonResponse(['code'=>-1,'message'=>'无权操作此订单'],403);
 $status = (string)($order['status'] ?? '');
 if (!in_array($status,['SUCCESS','PAID'],true)) jsonResponse(['code'=>-1,'message'=>'当前订单状态不可退款'],400);
 if (!empty($order['refund_status']) && in_array($order['refund_status'],['PROCESSING','SUCCESS'],true)) {
@@ -18,9 +24,11 @@ if (!empty($order['refund_status']) && in_array($order['refund_status'],['PROCES
 }
 $totalFen = (int)($order['amount_pay_fen'] ?? $order['amount'] ?? 0);
 if ($totalFen <= 0) jsonResponse(['code'=>-1,'message'=>'订单金额异常，无法发起退款'],400);
-$outRefundNo='RFD'.time().random_int(1000,9999);
+$outRefundNo='RFD'.date('YmdHis').random_int(100000,999999);
 $refundResult=createRefund($outTradeNo,$outRefundNo,$totalFen,$totalFen,$reason);
 if(!$refundResult['success']) jsonResponse(['code'=>-1,'message'=>'退款申请失败','error'=>$refundResult['error']??null],500);
-$order['status']='REFUND_REQUESTED';$order['refund_reason']=$reason;$order['refund_requested_at']=date('c');$order['out_refund_no']=$outRefundNo;$order['refund_status']=(string)($refundResult['data']['status']??'PROCESSING');
+$refundStatus=(string)($refundResult['data']['status']??'PROCESSING');
+try { dbMarkRefund($outTradeNo,$outRefundNo,$refundStatus,$totalFen,$totalFen); } catch(Throwable $ignored) {}
+$order['status']='REFUND_REQUESTED';$order['refund_reason']=$reason;$order['refund_requested_at']=date('c');$order['out_refund_no']=$outRefundNo;$order['refund_status']=$refundStatus;
 $orders[$outTradeNo]=$order;writeOrders($orders);
 jsonResponse(['code'=>0,'message'=>'退款申请已提交，后台将自动处理并原路返回','out_trade_no'=>$outTradeNo,'out_refund_no'=>$outRefundNo,'refund_status'=>$order['refund_status']]);
